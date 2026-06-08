@@ -4,9 +4,15 @@ if bigrect_state then
   print(bigrect_state)
 end
 
+local r1, c1
+
 function love.load()
   -- init global to use in muliple files
   tick = require "tick"
+  local Rectangle = require "rectangle"
+  local Circle = require "circle"
+  r1 = Rectangle(100, 100, 200, 50)
+  c1 = Circle(350, 80, 40)
   listOfRectangles = {}
   drawRectangles = false
   -- delay 2 secion than draw rect
@@ -16,6 +22,8 @@ end
 function love.update(dt)
   -- update pos
   tick.update(dt)
+  r1:update(dt)
+  c1:update(dt)
   for i,v in ipairs(listOfRectangles) do
     v.x = v.x + v.s * dt
   end
@@ -23,6 +31,8 @@ end
 
 function love.draw()
   -- draw graphic
+  r1:draw(r1)
+  c1:draw(r1)
   for i,v in ipairs(listOfRectangles) do
     love.graphics.rectangle("fill", v.x, v.y, v.w, v.h)
   end
