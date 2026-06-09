@@ -13,7 +13,12 @@ function Player:update(dt)
   end
 
   self:bound()
+end
 
+function Player:keypressed(key)
+  if key == "space" then
+    table.insert(bullets, Bullet((self.x + self.x + self.width)/2, self.y+self.height))
+  end
 end
 
 return Player
