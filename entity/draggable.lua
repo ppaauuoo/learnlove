@@ -1,5 +1,5 @@
 local Entity = require "entity.core"
-local Draggable = Entity:extend() 
+local Draggable = Entity:extend()
 
 function Draggable:new(x, y, radius)
   self.x = x or 300
@@ -15,31 +15,25 @@ end
 
 function Draggable:update(dt, mx, my)
   if self.drag then
-    self.x = math.clamp(x, dt, mx)
-    self.y = math.clamp(y, dt, my)
+    self.x = mx
+    self.y = my
   end
 end
 
-function Draggable:mousepressed(x, y, btn)
+function Draggable:dragging(btn)
+  self.drag = (btn == 1)
+end
+
+function Draggable:mouseReleased(btn)
   if btn == 1 then
-    self.drag = true
-  else
     self.drag = false
   end
 end
 
 function Draggable:collideWith(mx, my)
-    local self_left = self.x
-    local self_right = self.x + self.width
-    local self_top = self.y
-    local self_bottom = self.y + self.height
-
-    if  self_right > mx
-    and self_left < mx
-    and self_bottom > my
-    and self_top < my then
-      return true
-    end
+  local dx = mx - self.x
+  local dy = my - self.y
+  return dx*dx + dy*dy <= self.radius*self.radius
 end
 
 return Draggable

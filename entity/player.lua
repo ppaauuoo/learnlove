@@ -7,9 +7,9 @@ function Player:new(x, y, speed, width, height)
 end
 
 function Player:update(dt)
-  if love.keyboard.isDown("left", "h") then
+  if love.keyboard.isDown("left", "h", "a") then
     self.x = self.x - self.speed * dt
-  elseif love.keyboard.isDown("right", "l") then
+  elseif love.keyboard.isDown("right", "l", "d") then
     self.x = self.x + self.speed * dt
   end
   if love.keyboard.isDown("space") then

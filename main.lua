@@ -19,7 +19,7 @@ function love.update(dt)
   enemy:update(dt)
 
   mx, my = love.mouse.getPosition()
-  if obj:collideWith(mx,my) then
+  if obj.drag or obj:collideWith(mx, my) then
     obj:update(dt, mx, my)
   end
 
@@ -44,6 +44,14 @@ function love.draw()
   for _, bullet in ipairs(bullets) do
     bullet:draw()
   end
+end
+
+function love.mousepressed(x,y,btn)
+  obj:dragging(btn)
+end
+
+function love.mousereleased(x,y,btn)
+  obj:mouseReleased(btn)
 end
 
 function love.keyreleased(key)
