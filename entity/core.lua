@@ -13,18 +13,16 @@ function Entity:draw()
   love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 end
 
-function Entity:bound(after_func)
+function Entity:bound(after_func, left, right)
   local window_width = love.graphics.getWidth()
-  if self.x < 0 then
-    self.x = 0
-    if after_func then
-      after_func(self)
-    end
-  elseif self.x > window_width-self.width then
-    self.x = window_width - self.width
-    if after_func then
-      after_func(self)
-    end
+  local left_bound = left or 0
+  local right_bound = right or window_width - self.width
+  if self.x < left_bound then
+    self.x = left_bound
+    if after_func then after_func(self) end
+  elseif self.x > right_bound then
+    self.x = right_bound
+    if after_func then after_func(self) end
   end
 end
 
@@ -46,10 +44,6 @@ function Entity:collideWith(obj)
       return true
     end
     return false
-end
-
-function math.clamp(low, n, high)
-  return math.min(math.max(n, low), high)
 end
 
 return Entity
