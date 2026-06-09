@@ -19,9 +19,9 @@ function love.update(dt)
     bullet:update(dt)
     if bullet:collideWith(enemy) then
       if enemy.speed > 0 then
-        enemy.speed = enemy.speed + 50
+        enemy.speed = enemy.speed + bullet.damage
       else
-        enemy.speed = enemy.speed - 50
+        enemy.speed = enemy.speed - bullet.damage
       end
       table.remove(bullets, i)
     end
@@ -33,10 +33,10 @@ function love.draw()
   enemy:draw()
 
   for i,bullet in ipairs(bullets) do
-    bullet:draw(dt)
+    bullet:draw()
   end
 end
 
-function love.keypressed(key)
-  player:keypressed(key)
+function love.keyreleased(key)
+  player:keyreleased(key)
 end
