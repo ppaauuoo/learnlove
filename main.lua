@@ -2,9 +2,9 @@ local Player
 local Enemy
 
 function love.load()
-  Player = require "player"
-  Enemy = require "enemy"
-  Bullet = require "bullet"
+  Player = require "entity.player"
+  Enemy = require "entity.enemy"
+  Bullet = require "entity.bullet"
 
   player = Player()
   enemy = Enemy()

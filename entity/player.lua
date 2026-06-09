@@ -1,4 +1,4 @@
-local Entity = require "entity"
+local Entity = require "entity.core"
 local Player = Entity:extend() 
 
 local timer
@@ -30,9 +30,8 @@ function Player:draw()
 end
 
 function center_text(text, sx, sy)
-  x = love.graphics.getWidth()/2
-  y = love.graphics.getHeight()/2
-  love.graphics.print(text, x, y, 0, sx, sy)
+  local y = love.graphics.getHeight()/2
+  love.graphics.printf(text, 0, y, 100, "center", 0, sx, sy, 1, 1)
 end
 
 function Player:keyreleased(key)

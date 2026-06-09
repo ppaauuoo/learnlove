@@ -1,4 +1,4 @@
-local Object = require "classic"
+local Object = require "deps.classic"
 local Entity = Object:extend() 
 
 function Entity:new(x, y, speed, width, height)

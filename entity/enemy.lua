@@ -1,4 +1,4 @@
-local Entity = require "entity"
+local Entity = require "entity.core"
 local Enemy = Entity:extend() 
 
 function Enemy:new()

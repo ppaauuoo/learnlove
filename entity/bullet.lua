@@ -1,5 +1,5 @@
 
-local Entity = require "entity"
+local Entity = require "entity.core"
 local Bullet = Entity:extend() 
 
 function Bullet:new(x, y, w, h, speed, damage)
