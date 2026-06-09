@@ -1,8 +1,8 @@
 local Entity = require "entity.core"
 local Enemy = Entity:extend() 
 
-function Enemy:new()
-  Enemy.super.new(self, 325, 450, 100, 50, 50)
+function Enemy:new(x, y, speed, width, height)
+  Enemy.super.new(self, x or 325, y or 450, speed or 100, width or 50, height or 50)
 end
 
 function Enemy:update(dt)

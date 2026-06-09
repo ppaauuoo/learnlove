@@ -1,10 +1,9 @@
 local Entity = require "entity.core"
 local Player = Entity:extend() 
 
-local timer
-function Player:new()
-  Player.super.new(self, 300, 20, 500, 50, 50)
-  timer = 0
+function Player:new(x, y, speed, width, height)
+  Player.super.new(self, x or 300, y or 20, speed or 500, width or 50, height or 50)
+  self.timer = 0
 end
 
 function Player:update(dt)
@@ -14,9 +13,9 @@ function Player:update(dt)
     self.x = self.x + self.speed * dt
   end
   if love.keyboard.isDown("space") then
-    timer = timer + dt
+    self.timer = self.timer + dt
   else
-    timer = 0
+    self.timer = 0
   end
 
   self:bound()
@@ -24,7 +23,7 @@ end
 
 function Player:draw()
   Player.super.draw(self)
-  if timer > 2 then
+  if self.timer > 2 then
     center_text('RELEASE', 5, 5)
   end
 end
@@ -36,10 +35,10 @@ end
 
 function Player:keyreleased(key)
   if key == "space" then
-    if timer > 2 then
-      self.big_shot(self)
+    if self.timer > 2 then
+      self:big_shot()
     else
-      self.normal_shot(self)
+      self:normal_shot()
     end
   end
 end

@@ -45,6 +45,11 @@ function Entity:collideWith(obj)
     and self_top < obj_bottom then
       return true
     end
+    return false
+end
+
+function math.clamp(low, n, high)
+  return math.min(math.max(n, low), high)
 end
 
 return Entity

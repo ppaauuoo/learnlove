@@ -1,19 +1,27 @@
 local Player
 local Enemy
+local Draggable
 
 function love.load()
   Player = require "entity.player"
   Enemy = require "entity.enemy"
   Bullet = require "entity.bullet"
+  Draggable = require "entity.draggable"
 
   player = Player()
   enemy = Enemy()
+  obj = Draggable()
   bullets = {}
 end
 
 function love.update(dt)
   player:update(dt)
   enemy:update(dt)
+
+  mx, my = love.mouse.getPosition()
+  if obj:collideWith(mx,my) then
+    obj:update(dt, mx, my)
+  end
 
   for i,bullet in ipairs(bullets) do
     bullet:update(dt)
@@ -31,8 +39,9 @@ end
 function love.draw()
   player:draw()
   enemy:draw()
+  obj:draw()
 
-  for i,bullet in ipairs(bullets) do
+  for _, bullet in ipairs(bullets) do
     bullet:draw()
   end
 end
