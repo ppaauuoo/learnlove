@@ -82,7 +82,7 @@ function PlayerSystem:update(dt)
         -- 2. drain / recharge
         if p.using_power then
             p.power_duration = p.power_duration - dt
-        elseif p.power_duration < POWER_MAX then
+        elseif not love.keyboard.isDown("space") and p.power_duration < POWER_MAX then
             p.power_duration = math.min(p.power_duration + dt, POWER_MAX)
         end
 
@@ -108,7 +108,7 @@ end
 function PlayerSystem:draw()
     for _, e in ipairs(self.pool) do
         love.graphics.circle("fill", e.position.x, e.position.y, 5)
-        love.graphics.print(e.player.power_duration, 700, 700)
+        love.graphics.print(tostring(e.player.power_duration), 10, 10)
     end
 end
 
