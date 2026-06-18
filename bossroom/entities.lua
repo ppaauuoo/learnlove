@@ -337,14 +337,12 @@ end
 
 function Boss:updateAttack(dt, player)
     if self.attackType == "slam" then
-        if self.stateTimer < 0.3 then
-            self.attackHitbox = {
-                x = self.x - 80,
-                y = self.y + self.h,
-                w = 260,
-                h = 32
-            }
-        end
+        self.attackHitbox = {
+            x = self.x - 80,
+            y = self.y + self.h,
+            w = 260,
+            h = 32
+        }
     elseif self.attackType == "dash" then
         self.attackHitbox = {
             x = self.x,
