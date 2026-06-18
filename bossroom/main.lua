@@ -73,6 +73,7 @@ function love.update(dt)
         if roomName ~= currentRoom then
             currentRoom = roomName
             Camera.setBounds(room)
+            Camera.zoom = roomName == "boss" and 1 or 1.25
 
             -- Entering boss room: activate boss, seal door
             if roomName == "boss" and not bossActive then

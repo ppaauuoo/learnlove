@@ -6,6 +6,7 @@ Camera.y = 0
 Camera.targetX = 0
 Camera.targetY = 0
 Camera.smoothSpeed = 8
+Camera.zoom = 1.25
 
 -- Room bounds the camera is currently locked to (nil = free follow)
 Camera.bounds = nil
@@ -52,23 +53,25 @@ function Camera.update(dt, followX, followY, screenW, screenH)
         return
     end
 
+    local viewW = screenW / Camera.zoom
+    local viewH = screenH / Camera.zoom
+
     -- Target: center on follow position
-    Camera.targetX = followX - screenW / 2
-    Camera.targetY = followY - screenH / 2
+    Camera.targetX = followX - viewW / 2
+    Camera.targetY = followY - viewH / 2
 
     -- Clamp to room bounds if set
     if Camera.bounds then
         local b = Camera.bounds
-        -- If room is smaller than screen, center camera on room
-        if b.w <= screenW then
-            Camera.targetX = b.x + b.w / 2 - screenW / 2
+        if b.w <= viewW then
+            Camera.targetX = b.x + b.w / 2 - viewW / 2
         else
-            Camera.targetX = math.max(b.x, math.min(Camera.targetX, b.x + b.w - screenW))
+            Camera.targetX = math.max(b.x, math.min(Camera.targetX, b.x + b.w - viewW))
         end
-        if b.h <= screenH then
-            Camera.targetY = b.y + b.h / 2 - screenH / 2
+        if b.h <= viewH then
+            Camera.targetY = b.y + b.h / 2 - viewH / 2
         else
-            Camera.targetY = math.max(b.y, math.min(Camera.targetY, b.y + b.h - screenH))
+            Camera.targetY = math.max(b.y, math.min(Camera.targetY, b.y + b.h - viewH))
         end
     end
 
@@ -82,6 +85,9 @@ function Camera.apply(shakeX, shakeY)
         math.floor(-Camera.x + (shakeX or 0)),
         math.floor(-Camera.y + (shakeY or 0))
     )
+    if Camera.zoom ~= 1 then
+        love.graphics.scale(Camera.zoom, Camera.zoom)
+    end
 end
 
 -- Check if a point is near a room edge (for triggering transitions)
