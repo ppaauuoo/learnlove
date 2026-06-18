@@ -32,6 +32,22 @@ function love.load()
     local spawn = Rooms.list.hallway.playerSpawn
     player = Entities.Player(world, spawn.x, spawn.y)
 
+    -- Stop previous BGM if restarting
+    if SFX and SFX.lowTempo then SFX.lowTempo:stop() end
+
+    -- Load sounds
+    SFX = {
+        shortSwing = love.audio.newSource("ShortSwing.wav", "static"),
+        critical = love.audio.newSource("Critical.wav", "static"),
+        bigGuyScream = love.audio.newSource("BigGuyScream.wav", "static"),
+        horrorScream = love.audio.newSource("HorrorScream.wav", "static"),
+        lowTempo = love.audio.newSource("LowTempo.wav", "stream"),
+    }
+    SFX.shortSwing:setVolume(0.25)
+    SFX.lowTempo:setLooping(true)
+    SFX.lowTempo:setVolume(0.12)
+    SFX.lowTempo:play()
+
     -- Spawn boss in boss room (inactive until player enters)
     local bossSpawn = Rooms.list.boss.bossSpawn
     boss = Entities.Boss(world, bossSpawn.x, bossSpawn.y)

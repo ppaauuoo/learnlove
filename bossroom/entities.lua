@@ -149,6 +149,7 @@ function Player:attack()
     if self.attackCooldown > 0 then return end
     self.attackTimer = 0.1
     self.attackCooldown = 0.41
+    SFX.shortSwing:play()
 end
 
 function Player:dash()
@@ -258,6 +259,9 @@ end
 
 function Boss:update(dt, player)
     if self.hp <= 0 then
+        if self.state ~= "dead" then
+            SFX.bigGuyScream:play()
+        end
         self.state = "dead"
         self.attackHitbox = nil
         return
@@ -277,6 +281,8 @@ function Boss:update(dt, player)
 
     -- Stagger check
     if self.state ~= "stagger" and self.hitsTaken >= self.staggerThreshold then
+        SFX.critical:play()
+        SFX.bigGuyScream:play()
         self:enterState("stagger")
     end
 
