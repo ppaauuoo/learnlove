@@ -308,6 +308,10 @@ function Boss:update(dt, player)
     elseif self.state == "attack" then
         self:updateAttack(dt, player)
         if self.stateTimer <= 0 then
+            -- Screen shake on slam/shockwave impact
+            if self.attackType == "slam" or self.attackType == "shockwave" then
+                Combat.shake(0.15)
+            end
             if self.attackType == "leap" and self.phase == 3 and self.leapCount < 2 then
                 self.leapCount = self.leapCount + 1
                 self:enterState("telegraph")
@@ -344,10 +348,21 @@ function Boss:update(dt, player)
     self.facing = player.x < self.x and -1 or 1
 
     -- Move boss
+    local prevVx = self.vx
     if self.visible then
         Physics.move(self, dt)
     else
         Physics.moveRaw(self, dt)
+    end
+
+    -- Dash wall hit shake
+    if self.state == "attack" and self.attackType == "dash" and prevVx ~= 0 and self.vx == 0 then
+        Combat.shake(0.15)
+    end
+
+    -- Leap landing shake
+    if self.state == "attack" and self.attackType == "leap" and self.onGround then
+        Combat.shake(0.2)
     end
 
     -- Check boss attack hits player
@@ -365,6 +380,7 @@ function Boss:enterState(state)
     self.attackHitbox = nil
     self.attackType = nil
     self.visible = true
+    self._leapShook = false
 
     if state == "idle" then
         self.stateTimer = 0.5 + math.random() * 1.0

@@ -12,6 +12,10 @@ Combat.shakeTimer = 0
 Combat.shakeX = 0
 Combat.shakeY = 0
 
+function Combat.shake(duration, intensity)
+    Combat.shakeTimer = duration or 0.1
+end
+
 function Combat.resolveDamage(source, target, game)
     if not Health.canTakeDamage(target) then return false end
 
