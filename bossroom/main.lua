@@ -1,10 +1,6 @@
 -- main.lua: Hollow Knight Boss Room (hitbox prototype)
--- Fix require path so deps/ from parent directory is accessible
-local srcDir = love.filesystem.getSource()
-package.path = srcDir .. "/../deps/?.lua;" .. srcDir .. "/../deps/?/init.lua;" .. srcDir .. "/?.lua;" .. package.path
-
-require("lick")
-local bump = require("bump")
+require("deps.lick")
+local bump = require("deps.bump")
 local Combat = require("combat")
 local Entities = require("entities")
 local Particles = require("components.particles")

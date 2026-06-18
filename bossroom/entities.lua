@@ -1,5 +1,5 @@
 -- entities.lua: Player + Boss classes (using reusable components)
-local Object = require("classic")
+local Object = require("deps.classic")
 local Combat = require("combat")
 local Physics = require("components.physics")
 local Health = require("components.health")

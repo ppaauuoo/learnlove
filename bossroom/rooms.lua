@@ -1,5 +1,5 @@
 -- rooms.lua: room definitions and layout
-local bump = require("bump")
+local bump = require("deps.bump")
 
 local Rooms = {}
 
