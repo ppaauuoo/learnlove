@@ -42,12 +42,12 @@ function Player:new(world, x, y)
     self.dashCooldown = 0
     self.dashDir = 1
 
-    self.walkSprites = loadPlayerSprites("helmet_walk_")
-    self.attackSprites = loadPlayerSprites("helmet_attack_")
+    self.walkSprites = loadPlayerSprites("assets/helmet/helmet_walk_")
+    self.attackSprites = loadPlayerSprites("assets/helmet/helmet_attack_")
     self.animFrame = 0
     self.animTimer = 0
 
-    self.attackEffect = love.graphics.newImage("Attack.png")
+    self.attackEffect = love.graphics.newImage("assets/helmet/Attack.png")
     self.attackEffect:setFilter("nearest", "nearest")
 end
 
@@ -225,7 +225,7 @@ local Boss = Object:extend()
 local function loadSprites()
     local frames = {}
     for i = 0, 3 do
-        local img = love.graphics.newImage("boss_frame_" .. i .. ".png")
+        local img = love.graphics.newImage("assets/boss/boss_frame_" .. i .. ".png")
         img:setFilter("nearest", "nearest")
         frames[i] = img
     end
