@@ -174,7 +174,7 @@ end
 local Boss = Object:extend()
 
 function Boss:new(world, x, y)
-    Physics.init(self, world, x, y, 60, 80, "boss")
+    Physics.init(self, world, x, y, 100, 200, "boss")
     Health.init(self, 30)
     Knockback.init(self)
 
@@ -339,9 +339,9 @@ function Boss:updateAttack(dt, player)
     if self.attackType == "slam" then
         if self.stateTimer < 0.3 then
             self.attackHitbox = {
-                x = self.x - 50,
+                x = self.x - 80,
                 y = self.y + self.h,
-                w = 160,
+                w = 260,
                 h = 32
             }
         end
@@ -354,11 +354,11 @@ function Boss:updateAttack(dt, player)
         }
     elseif self.attackType == "shockwave" then
         local dir = player.x < self.x and -1 or 1
-        local sx = dir == 1 and (self.x + self.w) or (self.x - 200)
+        local sx = dir == 1 and (self.x + self.w) or (self.x - 300)
         self.attackHitbox = {
             x = sx,
             y = self.y + self.h - 20,
-            w = 200,
+            w = 300,
             h = 20
         }
     elseif self.attackType == "leap" then
@@ -370,10 +370,10 @@ function Boss:updateAttack(dt, player)
                 self.vy = 800
             end
             self.attackHitbox = {
-                x = self.x - 30,
+                x = self.x - 50,
                 y = self.y,
-                w = 120,
-                h = 120
+                w = 200,
+                h = 200
             }
         end
     end

@@ -31,7 +31,7 @@ Rooms.list = {
             -- no left wall (connects to hallway)
         },
         playerSpawn = { x = 1700, y = 600 },
-        bossSpawn = { x = 2100, y = 580 },
+        bossSpawn = { x = 1950, y = 480 },
         bossRoom = true,
     },
 }
