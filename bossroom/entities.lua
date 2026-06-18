@@ -203,8 +203,8 @@ function Boss:update(dt, player)
 
     Health.update(self, dt)
 
-    -- Knockback
-    if self.knockback.timer > 0 then
+    -- Knockback (resisted while attacking)
+    if self.state ~= "attack" and self.knockback.timer > 0 then
         self.knockback.timer = self.knockback.timer - dt
         self.vx = self.knockback.vx
         self.vy = self.knockback.vy
@@ -227,6 +227,9 @@ function Boss:update(dt, player)
     else
         self.phase = 3
     end
+
+    -- Stagger threshold halves after phase 1
+    self.staggerThreshold = self.phase == 1 and 12 or 6
 
     -- State machine
     self.stateTimer = self.stateTimer - dt
@@ -340,6 +343,11 @@ function Boss:beginAttack(player)
             self.vx = dir * 600
         end
     elseif self.attackType == "shockwave" then
+        if self.phase == 3 then
+            self.x = 1950
+            self.y = 480
+            self.world:update(self.item, self.x, self.y)
+        end
         self.stateTimer = 0.15
         self.vx = 0
     elseif self.attackType == "leap" then
