@@ -173,6 +173,20 @@ end
 -- ============================================================
 local Boss = Object:extend()
 
+-- Load sprites
+-- frame 0: idle
+-- frame 1-2: prepare/charge/pre-attack
+-- frame 3: airborne (legs up)
+local function loadSprites()
+    local frames = {}
+    for i = 0, 3 do
+        local img = love.graphics.newImage("boss_frame_" .. i .. ".png")
+        img:setFilter("nearest", "nearest")
+        frames[i] = img
+    end
+    return frames
+end
+
 function Boss:new(world, x, y)
     Physics.init(self, world, x, y, 100, 200, "boss")
     Health.init(self, 30)
@@ -191,6 +205,9 @@ function Boss:new(world, x, y)
     self.leapCount = 0
 
     self.leapTarget = nil
+    self.facing = 1
+    self.sprites = loadSprites()
+    self.spriteFrame = 0
     self.visible = true
 end
 
@@ -277,6 +294,9 @@ function Boss:update(dt, player)
             self:enterState("idle")
         end
     end
+
+    -- Face the player
+    self.facing = player.x < self.x and -1 or 1
 
     -- Move boss
     if self.visible then
@@ -410,23 +430,33 @@ function Boss:draw()
     if not self.visible then return end
     if self.hp <= 0 then return end
 
-    -- Telegraph blink
+    -- Choose sprite frame
     if self.state == "telegraph" then
-        local blink = math.floor(love.timer.getTime() * 10) % 2
-        if blink == 0 then
-            love.graphics.setColor(1, 0.8, 0)
-        else
-            love.graphics.setColor(0.8, 0.1, 0.1)
-        end
+        -- alternate between frame 1 and 2 during telegraph
+        self.spriteFrame = math.floor(love.timer.getTime() * 10) % 2 == 0 and 1 or 2
+    elseif not self.onGround then
+        self.spriteFrame = 3
+    else
+        self.spriteFrame = 0
+    end
+
+    -- Tint
+    if self.state == "telegraph" then
+        love.graphics.setColor(1, 0.8, 0)
     elseif self.state == "stagger" then
         love.graphics.setColor(0.4, 0.4, 0.6)
     elseif self.flashTimer > 0 then
         love.graphics.setColor(1, 1, 1)
     else
-        love.graphics.setColor(0.8, 0.1, 0.1)
+        love.graphics.setColor(1, 1, 1)
     end
 
-    love.graphics.rectangle("fill", self.x, self.y, self.w, self.h)
+    local sprite = self.sprites[self.spriteFrame]
+    local sx = self.w / sprite:getWidth()
+    local sy = self.h / sprite:getHeight()
+    local flip = -self.facing
+    local dx = flip == -1 and self.x + self.w or self.x
+    love.graphics.draw(sprite, dx, self.y, 0, sx * flip, sy)
 
     -- Attack hitbox visual
     if self.attackHitbox then
