@@ -6,6 +6,7 @@ package.path = srcDir .. "/../deps/?.lua;" .. srcDir .. "/../deps/?/init.lua;" .
 local bump = require("bump")
 local Combat = require("combat")
 local Entities = require("entities")
+local Particles = require("components.particles")
 
 local world, player, boss
 local debugMode = false
@@ -39,7 +40,7 @@ function love.load()
     Combat.shakeTimer = 0
     Combat.shakeX = 0
     Combat.shakeY = 0
-    Combat.particles = {}
+    Particles.reset()
     gameState = "playing"
     endTimer = 0
     debugMode = false

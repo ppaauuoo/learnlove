@@ -1,6 +1,9 @@
--- entities.lua: Player + Boss classes
+-- entities.lua: Player + Boss classes (using reusable components)
 local Object = require("classic")
 local Combat = require("combat")
+local Physics = require("components.physics")
+local Health = require("components.health")
+local Knockback = require("components.knockback")
 
 -- ============================================================
 -- PLAYER
@@ -8,20 +11,16 @@ local Combat = require("combat")
 local Player = Object:extend()
 
 function Player:new(world, x, y)
-    self.world = world
-    self.x, self.y = x, y
-    self.w, self.h = 20, 40
-    self.vx, self.vy = 0, 0
+    Physics.init(self, world, x, y, 20, 40, "player")
+    Health.init(self, 5)
+    Knockback.init(self)
+
     self.facing = 1
-    self.hp, self.maxHp = 5, 5
-    self.iframes = 0
-    self.flashTimer = 0
     self.isPlayer = true
 
     self.state = "idle" -- idle/run/jump/fall/attack/dash/hurt/dead
-    self.onGround = false
     self.jumpHeld = false
-    self.jumpTimer = 0 -- for variable height
+    self.jumpTimer = 0
 
     self.attackTimer = 0
     self.attackCooldown = 0
@@ -29,28 +28,18 @@ function Player:new(world, x, y)
     self.dashTimer = 0
     self.dashCooldown = 0
     self.dashDir = 1
-
-    self.knockback = { vx = 0, vy = 0, timer = 0 }
-
-    -- bump item
-    self.item = { type = "player", entity = self }
-    world:add(self.item, x, y, self.w, self.h)
 end
 
 function Player:update(dt, boss)
     if self.state == "dead" then return end
 
-    self.iframes = math.max(0, self.iframes - dt)
-    self.flashTimer = math.max(0, self.flashTimer - dt)
+    Health.update(self, dt)
     self.attackCooldown = math.max(0, self.attackCooldown - dt)
     self.dashCooldown = math.max(0, self.dashCooldown - dt)
 
     -- Knockback
-    if self.knockback.timer > 0 then
-        self.knockback.timer = self.knockback.timer - dt
-        self.vx = self.knockback.vx
-        self.vy = self.knockback.vy
-        self:move(dt)
+    if Knockback.update(self, dt) then
+        Physics.move(self, dt)
         return
     end
 
@@ -63,9 +52,9 @@ function Player:update(dt, boss)
         else
             self.vx = self.dashDir * (150 / 0.17)
             self.vy = 0
-            self.iframes = 0.05 -- stay invincible during dash
+            self.iframes = 0.05
         end
-        self:move(dt)
+        Physics.move(self, dt)
         return
     end
 
@@ -81,7 +70,7 @@ function Player:update(dt, boss)
     end
 
     -- Gravity
-    self.vy = self.vy + 1200 * dt
+    Physics.applyGravity(self, dt)
 
     -- Variable jump: cut short if key released
     if self.jumpTimer > 0 then
@@ -106,7 +95,7 @@ function Player:update(dt, boss)
         self.state = self.vy < 0 and "jump" or "fall"
     end
 
-    self:move(dt)
+    Physics.move(self, dt)
 
     -- Check nail hit on boss
     if self.attackTimer > 0 and boss and boss.hp > 0 then
@@ -120,38 +109,12 @@ function Player:update(dt, boss)
     end
 end
 
-function Player:move(dt)
-    local goalX = self.x + self.vx * dt
-    local goalY = self.y + self.vy * dt
-
-    local actualX, actualY, cols, len = self.world:move(self.item, goalX, goalY, function(item, other)
-        if other.type == "solid" then return "slide" end
-        return nil
-    end)
-
-    self.x, self.y = actualX, actualY
-    self.onGround = false
-
-    for i = 1, len do
-        local col = cols[i]
-        if col.normal.y == -1 then
-            self.onGround = true
-            self.vy = 0
-        elseif col.normal.y == 1 then
-            self.vy = 0
-        end
-        if col.normal.x ~= 0 then
-            self.vx = 0
-        end
-    end
-end
-
 function Player:jump()
     if self.state == "dead" or self.state == "dash" then return end
     if self.onGround then
         self.vy = -480
         self.onGround = false
-        self.jumpTimer = 0.15 -- variable height window
+        self.jumpTimer = 0.15
     end
 end
 
@@ -211,15 +174,11 @@ end
 local Boss = Object:extend()
 
 function Boss:new(world, x, y)
-    self.world = world
-    self.x, self.y = x, y
-    self.w, self.h = 60, 80
-    self.vx, self.vy = 0, 0
-    self.hp, self.maxHp = 20, 20
-    self.iframes = 0
-    self.flashTimer = 0
-    self.isPlayer = false
+    Physics.init(self, world, x, y, 60, 80, "boss")
+    Health.init(self, 20)
+    Knockback.init(self)
 
+    self.isPlayer = false
     self.phase = 1
     self.state = "idle"
     self.stateTimer = 1.0
@@ -229,15 +188,8 @@ function Boss:new(world, x, y)
     self.hitsTaken = 0
     self.staggerThreshold = 12
 
-    self.knockback = { vx = 0, vy = 0, timer = 0 }
-
-    -- For leap attack
     self.leapTarget = nil
     self.visible = true
-
-    -- bump item
-    self.item = { type = "boss", entity = self }
-    world:add(self.item, x, y, self.w, self.h)
 end
 
 function Boss:update(dt, player)
@@ -247,8 +199,7 @@ function Boss:update(dt, player)
         return
     end
 
-    self.iframes = math.max(0, self.iframes - dt)
-    self.flashTimer = math.max(0, self.flashTimer - dt)
+    Health.update(self, dt)
 
     -- Knockback
     if self.knockback.timer > 0 then
@@ -258,7 +209,7 @@ function Boss:update(dt, player)
     end
 
     -- Gravity
-    self.vy = self.vy + 1200 * dt
+    Physics.applyGravity(self, dt)
 
     -- Stagger check
     if self.state ~= "stagger" and self.hitsTaken >= self.staggerThreshold then
@@ -267,9 +218,13 @@ function Boss:update(dt, player)
 
     -- Phase check
     local hpPct = self.hp / self.maxHp
-    if hpPct > 0.66 then self.phase = 1
-    elseif hpPct > 0.33 then self.phase = 2
-    else self.phase = 3 end
+    if hpPct > 0.66 then
+        self.phase = 1
+    elseif hpPct > 0.33 then
+        self.phase = 2
+    else
+        self.phase = 3
+    end
 
     -- State machine
     self.stateTimer = self.stateTimer - dt
@@ -280,27 +235,23 @@ function Boss:update(dt, player)
         if self.stateTimer <= 0 then
             self:pickAttack(player)
         end
-
     elseif self.state == "telegraph" then
         self.attackHitbox = nil
         self.vx = 0
         if self.stateTimer <= 0 then
             self:beginAttack(player)
         end
-
     elseif self.state == "attack" then
         self:updateAttack(dt, player)
         if self.stateTimer <= 0 then
             self:enterState("recovery")
         end
-
     elseif self.state == "recovery" then
         self.attackHitbox = nil
         self.vx = 0
         if self.stateTimer <= 0 then
             self:enterState("idle")
         end
-
     elseif self.state == "stagger" then
         self.attackHitbox = nil
         self.vx = 0
@@ -310,44 +261,20 @@ function Boss:update(dt, player)
         end
     end
 
-    -- Move boss via bump
-    self:move(dt)
+    -- Move boss
+    if self.visible then
+        Physics.move(self, dt)
+    else
+        Physics.moveRaw(self, dt)
+    end
 
     -- Check boss attack hits player
     if self.attackHitbox and player.iframes <= 0 and player.state ~= "dead" then
         local hb = self.attackHitbox
-        -- Simple AABB overlap with player
         local px, py, pw, ph = player.x, player.y, player.w, player.h
         if hb.x < px + pw and hb.x + hb.w > px and hb.y < py + ph and hb.y + hb.h > py then
             Combat.resolveDamage(self, player, nil)
         end
-    end
-end
-
-function Boss:move(dt)
-    local goalX = self.x + self.vx * dt
-    local goalY = self.y + self.vy * dt
-
-    -- During leap (invisible), ignore walls so boss can go offscreen
-    if not self.visible then
-        self.x, self.y = goalX, goalY
-        -- Update bump position without collision
-        self.world:update(self.item, goalX, goalY)
-        return
-    end
-
-    local actualX, actualY, cols, len = self.world:move(self.item, goalX, goalY, function(item, other)
-        if other.type == "solid" then return "slide" end
-        return nil
-    end)
-
-    self.x, self.y = actualX, actualY
-
-    for i = 1, len do
-        local col = cols[i]
-        if col.normal.y == -1 then self.vy = 0 end
-        if col.normal.y == 1 then self.vy = 0 end
-        if col.normal.x ~= 0 then self.vx = 0 end
     end
 end
 
@@ -374,7 +301,7 @@ function Boss:pickAttack(player)
     if self.phase >= 3 then table.insert(attacks, "leap") end
 
     self:enterState("telegraph")
-    self.attackType = attacks[math.random(#attacks)] -- set AFTER enterState so it doesn't get nil'd
+    self.attackType = attacks[math.random(#attacks)]
 end
 
 function Boss:beginAttack(player)
@@ -382,20 +309,16 @@ function Boss:beginAttack(player)
 
     if self.attackType == "slam" then
         self.stateTimer = 0.6
-        -- Jump toward player X
         local targetX = player.x + player.w / 2 - self.w / 2
         self.vx = (targetX - self.x) / 0.3
         self.vy = -500
-
     elseif self.attackType == "dash" then
         self.stateTimer = 0.25
         local dir = player.x < self.x and -1 or 1
         self.vx = dir * 600
-
     elseif self.attackType == "shockwave" then
         self.stateTimer = 0.15
         self.vx = 0
-
     elseif self.attackType == "leap" then
         self.stateTimer = 0.8
         self.leapTarget = { x = player.x, y = player.y }
@@ -406,7 +329,6 @@ end
 
 function Boss:updateAttack(dt, player)
     if self.attackType == "slam" then
-        -- Active hitbox once falling/landed (second half of timer)
         if self.stateTimer < 0.3 then
             self.attackHitbox = {
                 x = self.x - 50,
@@ -415,18 +337,14 @@ function Boss:updateAttack(dt, player)
                 h = 32
             }
         end
-
     elseif self.attackType == "dash" then
-        -- Body is the hitbox
         self.attackHitbox = {
             x = self.x,
             y = self.y,
             w = self.w,
             h = self.h
         }
-
     elseif self.attackType == "shockwave" then
-        -- Ground-level extending from boss
         local dir = player.x < self.x and -1 or 1
         local sx = dir == 1 and (self.x + self.w) or (self.x - 200)
         self.attackHitbox = {
@@ -435,9 +353,7 @@ function Boss:updateAttack(dt, player)
             w = 200,
             h = 20
         }
-
     elseif self.attackType == "leap" then
-        -- Reappear and slam down in second half
         if self.stateTimer < 0.4 then
             self.visible = true
             if self.leapTarget then
