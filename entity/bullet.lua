@@ -12,7 +12,7 @@ function Bullet:new(x, y, w, h, speed, damage)
 end
 
 function Bullet:update(dt)
-  self.y = self.y + self.speed * dt
+  self.y = self.y - self.speed * dt
 end
 
 
