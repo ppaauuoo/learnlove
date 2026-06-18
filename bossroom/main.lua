@@ -32,8 +32,12 @@ function love.load()
     local spawn = Rooms.list.hallway.playerSpawn
     player = Entities.Player(world, spawn.x, spawn.y)
 
-    -- Stop previous BGM if restarting
-    if SFX and SFX.lowTempo then SFX.lowTempo:stop() end
+    -- Stop all previous sounds if restarting
+    if SFX then
+        for _, s in pairs(SFX) do
+            if s.stop then s:stop() end
+        end
+    end
 
     -- Load sounds
     SFX = {
@@ -42,11 +46,23 @@ function love.load()
         bigGuyScream = love.audio.newSource("BigGuyScream.wav", "static"),
         horrorScream = love.audio.newSource("HorrorScream.wav", "static"),
         lowTempo = love.audio.newSource("LowTempo.wav", "stream"),
+        dash = love.audio.newSource("dash.wav", "static"),
+        smash = love.audio.newSource("smash.wav", "static"),
     }
-    SFX.shortSwing:setVolume(0.25)
+    SFX.shortSwing:setVolume(0.12)
+    SFX.horrorScream:setVolume(0.02)
+    SFX.bigGuyScream:setVolume(0.12)
+    SFX.critical:setVolume(0.25)
+    SFX.dash:setVolume(0.12)
+    SFX.horrorScream:play()
     SFX.lowTempo:setLooping(true)
     SFX.lowTempo:setVolume(0.12)
     SFX.lowTempo:play()
+    SFX.highTempo = love.audio.newSource("HighTempo.wav", "stream")
+    SFX.highTempo:setLooping(true)
+    SFX.highTempo:setVolume(0.12)
+
+    horrorFade = 0
 
     -- Spawn boss in boss room (inactive until player enters)
     local bossSpawn = Rooms.list.boss.bossSpawn
@@ -100,6 +116,10 @@ function love.update(dt)
                     player.x = Rooms.door.x + Rooms.door.w
                     world:update(player.item, player.x, player.y)
                 end
+                -- Fade out horror scream, switch BGM
+                horrorFade = 1.5
+                SFX.lowTempo:stop()
+                SFX.highTempo:play()
             end
         end
 
@@ -122,9 +142,16 @@ function love.update(dt)
             endTimer = 1.5
             player.state = "dead"
             Combat.spawnParticles(player.x + player.w / 2, player.y + player.h / 2, 20)
+            SFX.horrorScream:play()
         end
     else
         endTimer = endTimer - dt
+    end
+
+    -- Horror scream fade (when entering boss room)
+    if horrorFade > 0 then
+        horrorFade = horrorFade - dt
+        SFX.horrorScream:setVolume(0.02 * math.max(0, horrorFade / 1.5))
     end
 
     -- Camera follows player center

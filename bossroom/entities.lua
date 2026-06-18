@@ -160,6 +160,7 @@ function Player:dash()
     self.dashCooldown = 0.6
     self.dashDir = self.facing
     self.vy = 0
+    SFX.dash:play()
 end
 
 function Player:getNailHitbox()
@@ -317,6 +318,7 @@ function Boss:update(dt, player)
             -- Screen shake on slam/shockwave impact
             if self.attackType == "slam" or self.attackType == "shockwave" then
                 Combat.shake(0.15)
+                SFX.smash:play()
             end
             if self.attackType == "leap" and self.phase == 3 and self.leapCount < 2 then
                 self.leapCount = self.leapCount + 1
