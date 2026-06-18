@@ -188,6 +188,7 @@ function Boss:new(world, x, y)
     self.hitsTaken = 0
     self.staggerThreshold = 12
     self.comboCount = 0
+    self.leapCount = 0
 
     self.leapTarget = nil
     self.visible = true
@@ -245,7 +246,14 @@ function Boss:update(dt, player)
     elseif self.state == "attack" then
         self:updateAttack(dt, player)
         if self.stateTimer <= 0 then
-            self:enterState("recovery")
+            if self.attackType == "leap" and self.phase == 3 and self.leapCount < 2 then
+                self.leapCount = self.leapCount + 1
+                self:enterState("telegraph")
+                self.attackType = "leap"
+            else
+                self.leapCount = 0
+                self:enterState("recovery")
+            end
         end
     elseif self.state == "recovery" then
         self.attackHitbox = nil
@@ -265,6 +273,7 @@ function Boss:update(dt, player)
         if self.stateTimer <= 0 then
             self.hitsTaken = 0
             self.comboCount = 0
+            self.leapCount = 0
             self:enterState("idle")
         end
     end
@@ -321,9 +330,15 @@ function Boss:beginAttack(player)
         self.vx = (targetX - self.x) / 0.3
         self.vy = -500
     elseif self.attackType == "dash" then
-        self.stateTimer = 0.25
-        local dir = player.x < self.x and -1 or 1
-        self.vx = dir * 600
+        if self.phase == 3 then
+            self.stateTimer = 0.8
+            local dir = player.x < self.x and -1 or 1
+            self.vx = dir * 1000
+        else
+            self.stateTimer = 0.25
+            local dir = player.x < self.x and -1 or 1
+            self.vx = dir * 600
+        end
     elseif self.attackType == "shockwave" then
         self.stateTimer = 0.15
         self.vx = 0
@@ -351,14 +366,23 @@ function Boss:updateAttack(dt, player)
             h = self.h
         }
     elseif self.attackType == "shockwave" then
-        local dir = player.x < self.x and -1 or 1
-        local sx = dir == 1 and (self.x + self.w) or (self.x - 300)
-        self.attackHitbox = {
-            x = sx,
-            y = self.y + self.h - 20,
-            w = 300,
-            h = 20
-        }
+        if self.phase == 3 then
+            self.attackHitbox = {
+                x = self.x - 300,
+                y = self.y + self.h - 20,
+                w = self.w + 600,
+                h = 20
+            }
+        else
+            local dir = player.x < self.x and -1 or 1
+            local sx = dir == 1 and (self.x + self.w) or (self.x - 300)
+            self.attackHitbox = {
+                x = sx,
+                y = self.y + self.h - 20,
+                w = 300,
+                h = 20
+            }
+        end
     elseif self.attackType == "leap" then
         if self.stateTimer < 0.4 then
             self.visible = true
