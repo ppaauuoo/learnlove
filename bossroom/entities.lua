@@ -228,9 +228,6 @@ function Boss:update(dt, player)
         self.phase = 3
     end
 
-    -- Stagger threshold halves after phase 1
-    self.staggerThreshold = self.phase == 1 and 12 or 6
-
     -- State machine
     self.stateTimer = self.stateTimer - dt
 
@@ -311,7 +308,7 @@ function Boss:enterState(state)
     elseif state == "recovery" then
         self.stateTimer = 0.3 + math.random() * 0.3
     elseif state == "stagger" then
-        self.stateTimer = 2.0
+        self.stateTimer = self.phase == 1 and 2.0 or 1.0
     end
 end
 
