@@ -175,7 +175,7 @@ local Boss = Object:extend()
 
 function Boss:new(world, x, y)
     Physics.init(self, world, x, y, 60, 80, "boss")
-    Health.init(self, 20)
+    Health.init(self, 30)
     Knockback.init(self)
 
     self.isPlayer = false
@@ -187,6 +187,7 @@ function Boss:new(world, x, y)
 
     self.hitsTaken = 0
     self.staggerThreshold = 12
+    self.comboCount = 0
 
     self.leapTarget = nil
     self.visible = true
@@ -250,13 +251,20 @@ function Boss:update(dt, player)
         self.attackHitbox = nil
         self.vx = 0
         if self.stateTimer <= 0 then
-            self:enterState("idle")
+            if self.phase == 2 and self.comboCount < 1 then
+                self.comboCount = self.comboCount + 1
+                self:enterState("telegraph")
+            else
+                self.comboCount = 0
+                self:enterState("idle")
+            end
         end
     elseif self.state == "stagger" then
         self.attackHitbox = nil
         self.vx = 0
         if self.stateTimer <= 0 then
             self.hitsTaken = 0
+            self.comboCount = 0
             self:enterState("idle")
         end
     end
