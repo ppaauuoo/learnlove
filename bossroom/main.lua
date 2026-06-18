@@ -21,7 +21,7 @@ local bossActive = false
 local SCREEN_W, SCREEN_H = 800, 720  -- virtual resolution, scales to any window
 
 function love.load()
-    love.window.setMode(0, 0, {fullscreen=true, fullscreentype="desktop"})
+    love.window.setMode(1280, 720, {fullscreen=false})
     love.window.setTitle("Boss Room")
     math.randomseed(os.time())
 
@@ -277,6 +277,7 @@ function love.keypressed(key)
     if key == "escape" then love.event.quit() end
     if key == "r" then love.load() end
     if key == "tab" then debugMode = not debugMode end
+    if key == "f11" then love.window.setFullscreen(not love.window.getFullscreen()) end
 
     if gameState ~= "playing" then return end
 
