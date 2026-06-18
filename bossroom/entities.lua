@@ -253,7 +253,7 @@ function Boss:update(dt, player)
         if self.stateTimer <= 0 then
             if self.phase == 2 and self.comboCount < 1 then
                 self.comboCount = self.comboCount + 1
-                self:enterState("telegraph")
+                self:pickAttack(player)
             else
                 self.comboCount = 0
                 self:enterState("idle")

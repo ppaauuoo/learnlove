@@ -3,6 +3,7 @@
 local srcDir = love.filesystem.getSource()
 package.path = srcDir .. "/../deps/?.lua;" .. srcDir .. "/../deps/?/init.lua;" .. srcDir .. "/?.lua;" .. package.path
 
+require("lick")
 local bump = require("bump")
 local Combat = require("combat")
 local Entities = require("entities")
