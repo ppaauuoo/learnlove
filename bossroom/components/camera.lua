@@ -7,6 +7,8 @@ Camera.targetX = 0
 Camera.targetY = 0
 Camera.smoothSpeed = 8
 Camera.zoom = 1.25
+Camera.virtualW = 800
+Camera.virtualH = 720
 
 -- Room bounds the camera is currently locked to (nil = free follow)
 Camera.bounds = nil
@@ -81,6 +83,15 @@ function Camera.update(dt, followX, followY, screenW, screenH)
 end
 
 function Camera.apply(shakeX, shakeY)
+    -- Uniform scale to fit window, centered (letterbox)
+    local scale = math.min(
+        love.graphics.getWidth() / Camera.virtualW,
+        love.graphics.getHeight() / Camera.virtualH
+    )
+    local ox = (love.graphics.getWidth() - Camera.virtualW * scale) / 2
+    local oy = (love.graphics.getHeight() - Camera.virtualH * scale) / 2
+    love.graphics.translate(ox, oy)
+    love.graphics.scale(scale, scale)
     love.graphics.translate(
         math.floor(-Camera.x + (shakeX or 0)),
         math.floor(-Camera.y + (shakeY or 0))

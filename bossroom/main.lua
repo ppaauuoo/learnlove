@@ -18,10 +18,10 @@ local endTimer = 0
 local currentRoom = "hallway"
 local bossActive = false
 
-local SCREEN_W, SCREEN_H = 800, 720
+local SCREEN_W, SCREEN_H = 800, 720  -- virtual resolution, scales to any window
 
 function love.load()
-    love.window.setMode(SCREEN_W, SCREEN_H)
+    love.window.setMode(0, 0, {fullscreen=true, fullscreentype="desktop"})
     love.window.setTitle("Boss Room")
     math.randomseed(os.time())
 
@@ -52,8 +52,8 @@ function love.load()
     -- Camera starts on player
     Camera.reset()
     Camera.setBounds(Rooms.list.hallway)
-    Camera.x = player.x - love.graphics.getWidth() / 2
-    Camera.y = player.y - love.graphics.getHeight() / 2
+    Camera.x = player.x - SCREEN_W / 2
+    Camera.y = player.y - SCREEN_H / 2
 end
 
 function love.update(dt)
@@ -112,7 +112,7 @@ function love.update(dt)
     end
 
     -- Camera follows player center
-    Camera.update(dt, player.x + player.w / 2, player.y + player.h / 2, love.graphics.getWidth(), love.graphics.getHeight())
+    Camera.update(dt, player.x + player.w / 2, player.y + player.h / 2, SCREEN_W, SCREEN_H)
 
     Combat.updateParticles(dt)
     Combat.updateShake(dt)
@@ -171,6 +171,17 @@ function love.draw()
 end
 
 function drawUI()
+    -- Scale UI to virtual resolution (uniform, centered)
+    local scale = math.min(
+        love.graphics.getWidth() / SCREEN_W,
+        love.graphics.getHeight() / SCREEN_H
+    )
+    local ox = (love.graphics.getWidth() - SCREEN_W * scale) / 2
+    local oy = (love.graphics.getHeight() - SCREEN_H * scale) / 2
+    love.graphics.push()
+    love.graphics.translate(ox, oy)
+    love.graphics.scale(scale, scale)
+
     -- Player HP (masks)
     for i = 1, player.maxHp do
         if i <= player.hp then
@@ -184,7 +195,7 @@ function drawUI()
     -- Boss HP bar (top of screen, only during fight)
     if bossActive and boss.hp > 0 then
         local barW, barH = 400, 12
-        local barX = (love.graphics.getWidth() - barW) / 2
+        local barX = (SCREEN_W - barW) / 2
         local barY = 20
         love.graphics.setColor(0.2, 0.2, 0.2)
         love.graphics.rectangle("fill", barX, barY, barW, barH)
@@ -198,22 +209,24 @@ function drawUI()
     -- End state text
     love.graphics.setColor(1, 1, 1)
     if gameState == "win" and endTimer <= 0 then
-        love.graphics.printf("YOU WIN", 0, 320, love.graphics.getWidth(), "center")
-        love.graphics.printf("Press R to restart", 0, 350, love.graphics.getWidth(), "center")
+        love.graphics.printf("YOU WIN", 0, 320, SCREEN_W, "center")
+        love.graphics.printf("Press R to restart", 0, 350, SCREEN_W, "center")
     elseif gameState == "dead" and endTimer <= 0 then
-        love.graphics.printf("DEAD", 0, 320, love.graphics.getWidth(), "center")
-        love.graphics.printf("Press R to restart", 0, 350, love.graphics.getWidth(), "center")
+        love.graphics.printf("DEAD", 0, 320, SCREEN_W, "center")
+        love.graphics.printf("Press R to restart", 0, 350, SCREEN_W, "center")
     end
 
     -- Room indicator
     love.graphics.setColor(1, 1, 1, 0.5)
-    love.graphics.print("Room: " .. currentRoom, 10, love.graphics.getHeight() - 20)
+    love.graphics.print("Room: " .. currentRoom, 10, SCREEN_H - 20)
 
     -- FPS (debug)
     if debugMode then
         love.graphics.setColor(1, 1, 0)
-        love.graphics.print("FPS: " .. love.timer.getFPS(), love.graphics.getWidth() - 80, 5)
+        love.graphics.print("FPS: " .. love.timer.getFPS(), SCREEN_W - 80, 5)
     end
+
+    love.graphics.pop()
 end
 
 function drawDebug()
