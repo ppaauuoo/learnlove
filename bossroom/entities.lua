@@ -4,19 +4,7 @@ local Combat = require("combat")
 local Physics = require("components.physics")
 local Health = require("components.health")
 local Knockback = require("components.knockback")
-
--- Load player sprites
--- frame 0: idle/stand
--- frame 1-4: walk cycle (ping-pong for 8-step anim)
-local function loadPlayerSprites(prefix)
-    local frames = {}
-    for i = 0, 4 do
-        local img = love.graphics.newImage(prefix .. i .. ".png")
-        img:setFilter("nearest", "nearest")
-        frames[i] = img
-    end
-    return frames
-end
+local Sprite = require("components.sprite")
 
 -- ============================================================
 -- PLAYER
@@ -42,8 +30,8 @@ function Player:new(world, x, y)
     self.dashCooldown = 0
     self.dashDir = 1
 
-    self.walkSprites = loadPlayerSprites("assets/helmet/helmet_walk_")
-    self.attackSprites = loadPlayerSprites("assets/helmet/helmet_attack_")
+    self.walkSprites = Sprite.load("assets/helmet/helmet_walk_", 5, 0)
+    self.attackSprites = Sprite.load("assets/helmet/helmet_attack_", 5, 0)
     self.animFrame = 0
     self.animTimer = 0
 
@@ -176,12 +164,9 @@ end
 function Player:draw()
     if self.state == "dead" then return end
 
-    -- Update animation frame (ping-pong 0-4-1 over 8 steps)
-    local animSpeed = 0.1
-    local total = 8
+    -- Update animation frame
     if self.state == "run" or self.state == "attack" then
-        local t = math.floor(self.animTimer / animSpeed) % total
-        self.animFrame = t <= 4 and t or (total - t)
+        self.animFrame = Sprite.pingpong(self.animTimer, 0.1, 4)
     else
         self.animFrame = 0
     end
@@ -193,25 +178,13 @@ function Player:draw()
     end
 
     -- Pick sprite set: attack when attacking, walk otherwise
-    local sprites
-    if self.attackTimer > 0 or self.state == "attack" then
-        sprites = self.attackSprites
-    else
-        sprites = self.walkSprites
-    end
-    local sprite = sprites[self.animFrame]
-    local sx = self.w / sprite:getWidth()
-    local sy = self.h / sprite:getHeight()
-    local dx = self.facing == -1 and self.x + self.w or self.x
-    love.graphics.draw(sprite, dx, self.y, 0, sx * self.facing, sy)
+    local sprites = (self.attackTimer > 0 or self.state == "attack") and self.attackSprites or self.walkSprites
+    Sprite.draw(sprites[self.animFrame], self.x, self.y, self.w, self.h, self.facing)
 
     -- Attack effect sprite
     if self.attackTimer > 0 then
         local hb = self:getNailHitbox()
-        local sx = (hb.w / self.attackEffect:getWidth()) * self.facing
-        local sy = hb.h / self.attackEffect:getHeight()
-        local dx = self.facing == -1 and hb.x + hb.w or hb.x
-        love.graphics.draw(self.attackEffect, dx, hb.y, 0, sx, sy)
+        Sprite.drawAt(self.attackEffect, hb.x, hb.y, hb.w, hb.h, self.facing)
     end
 end
 
@@ -225,13 +198,7 @@ local Boss = Object:extend()
 -- frame 1-2: prepare/charge/pre-attack
 -- frame 3: airborne (legs up)
 local function loadSprites()
-    local frames = {}
-    for i = 0, 3 do
-        local img = love.graphics.newImage("assets/boss/boss_frame_" .. i .. ".png")
-        img:setFilter("nearest", "nearest")
-        frames[i] = img
-    end
-    return frames
+    return Sprite.load("assets/boss/boss_frame_", 4, 0)
 end
 
 function Boss:new(world, x, y)
@@ -520,12 +487,7 @@ function Boss:draw()
         love.graphics.setColor(1, 1, 1)
     end
 
-    local sprite = self.sprites[self.spriteFrame]
-    local sx = self.w / sprite:getWidth()
-    local sy = self.h / sprite:getHeight()
-    local flip = -self.facing
-    local dx = flip == -1 and self.x + self.w or self.x
-    love.graphics.draw(sprite, dx, self.y, 0, sx * flip, sy)
+    Sprite.draw(self.sprites[self.spriteFrame], self.x, self.y, self.w, self.h, -self.facing)
 
     -- Attack hitbox visual
     if self.attackHitbox then

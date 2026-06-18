@@ -41,13 +41,13 @@ function love.load()
 
     -- Load sounds
     SFX = {
-        shortSwing = love.audio.newSource("ShortSwing.wav", "static"),
-        critical = love.audio.newSource("Critical.wav", "static"),
-        bigGuyScream = love.audio.newSource("BigGuyScream.wav", "static"),
-        horrorScream = love.audio.newSource("HorrorScream.wav", "static"),
-        lowTempo = love.audio.newSource("LowTempo.wav", "stream"),
-        dash = love.audio.newSource("dash.wav", "static"),
-        smash = love.audio.newSource("smash.wav", "static"),
+        shortSwing = love.audio.newSource("assets/sound/ShortSwing.wav", "static"),
+        critical = love.audio.newSource("assets/sound/Critical.wav", "static"),
+        bigGuyScream = love.audio.newSource("assets/sound/BigGuyScream.wav", "static"),
+        horrorScream = love.audio.newSource("assets/sound/HorrorScream.wav", "static"),
+        lowTempo = love.audio.newSource("assets/sound/LowTempo.wav", "stream"),
+        dash = love.audio.newSource("assets/sound/dash.wav", "static"),
+        smash = love.audio.newSource("assets/sound/smash.wav", "static"),
     }
     SFX.shortSwing:setVolume(0.12)
     SFX.horrorScream:setVolume(0.02)
@@ -58,11 +58,12 @@ function love.load()
     SFX.lowTempo:setLooping(true)
     SFX.lowTempo:setVolume(0.12)
     SFX.lowTempo:play()
-    SFX.highTempo = love.audio.newSource("HighTempo.wav", "stream")
+    SFX.highTempo = love.audio.newSource("assets/sound/HighTempo.wav", "stream")
     SFX.highTempo:setLooping(true)
     SFX.highTempo:setVolume(0.12)
 
     horrorFade = 0
+    tutorialFont = love.graphics.newFont(12)
 
     -- Spawn boss in boss room (inactive until player enters)
     local bossSpawn = Rooms.list.boss.bossSpawn
@@ -168,6 +169,38 @@ function love.draw()
     -- Draw hallway background
     love.graphics.setColor(0.06, 0.06, 0.09)
     love.graphics.rectangle("fill", 0, 0, Rooms.list.hallway.w, Rooms.list.hallway.h)
+
+    -- Hallway light orb + tutorial (only in hallway)
+    if currentRoom == "hallway" then
+        local lx, ly = 400, 120
+        for r = 1, 6 do
+            local alpha = (7 - r) / 7 * 0.12
+            love.graphics.setColor(1, 0.9, 0.6, alpha)
+            love.graphics.circle("fill", lx, ly, r * 60)
+        end
+        love.graphics.setColor(1, 0.95, 0.8, 0.25)
+        love.graphics.circle("fill", lx, ly, 20)
+
+        -- Glowing tutorial text
+        local tx, ty = 40, 500
+        love.graphics.setFont(tutorialFont)
+        local lines = {
+            "MOVE:  Arrow Keys / WASD",
+            "JUMP:  Up / W / Space",
+            "ATTACK:  X / J / Left Click",
+            "DASH:  C / K / Right Click",
+        }
+        for i, line in ipairs(lines) do
+            -- Glow layers
+            for g = 3, 1, -1 do
+                love.graphics.setColor(1, 0.9, 0.5, 0.06 * g)
+                love.graphics.print(line, tx - g, ty + (i - 1) * 20 - g)
+                love.graphics.print(line, tx + g, ty + (i - 1) * 20 + g)
+            end
+            love.graphics.setColor(0.9, 0.85, 0.7, 0.7)
+            love.graphics.print(line, tx, ty + (i - 1) * 20)
+        end
+    end
 
     -- Draw boss room background (slightly different shade)
     love.graphics.setColor(0.08, 0.08, 0.12)
@@ -333,4 +366,10 @@ function love.keypressed(key)
     if key == "c" or key == "k" then
         player:dash()
     end
+end
+
+function love.mousepressed(x, y, button)
+    if gameState ~= "playing" then return end
+    if button == 1 then player:attack() end
+    if button == 2 then player:dash() end
 end
