@@ -13,7 +13,7 @@ local Player = Object:extend()
 
 function Player:new(world, x, y)
     Physics.init(self, world, x, y, 50, 50, "player")
-    Health.init(self, 5)
+    Health.init(self, 7)
     Knockback.init(self)
 
     self.facing = 1
@@ -203,7 +203,7 @@ end
 
 function Boss:new(world, x, y)
     Physics.init(self, world, x, y, 100, 200, "boss")
-    Health.init(self, 30)
+    Health.init(self, 45)
     Knockback.init(self)
 
     self.isPlayer = false
@@ -335,9 +335,11 @@ function Boss:update(dt, player)
         Combat.shake(0.15)
     end
 
-    -- Leap landing shake
-    if self.state == "attack" and self.attackType == "leap" and self.onGround then
+    -- Leap landing shake + smash
+    if self.state == "attack" and self.attackType == "leap" and self.onGround and not self._leapShook then
+        self._leapShook = true
         Combat.shake(0.2)
+        SFX.smash:play()
     end
 
     -- Check boss attack hits player
@@ -369,7 +371,8 @@ function Boss:enterState(state)
 end
 
 function Boss:pickAttack(player)
-    local attacks = { "slam", "dash" }
+    local attacks = { "dash" }
+    if self.phase < 3 then table.insert(attacks, "slam") end
     if self.phase >= 2 then table.insert(attacks, "shockwave") end
     if self.phase >= 3 then table.insert(attacks, "leap") end
 
@@ -401,7 +404,7 @@ function Boss:beginAttack(player)
             self.y = 480
             self.world:update(self.item, self.x, self.y)
         end
-        self.stateTimer = 0.15
+        self.stateTimer = 0.65  -- 0.5s delay + 0.15s active
         self.vx = 0
     elseif self.attackType == "leap" then
         self.stateTimer = 0.8
@@ -428,12 +431,14 @@ function Boss:updateAttack(dt, player)
         }
     elseif self.attackType == "shockwave" then
         if self.phase == 3 then
+            if self.stateTimer < 0.15 then
             self.attackHitbox = {
                 x = self.x - 300,
                 y = self.y + self.h - 20,
                 w = self.w + 600,
                 h = 20
             }
+            end
         else
             local dir = player.x < self.x and -1 or 1
             local sx = dir == 1 and (self.x + self.w) or (self.x - 300)
@@ -467,7 +472,7 @@ function Boss:draw()
     if self.hp <= 0 then return end
 
     -- Choose sprite frame
-    if self.state == "telegraph" then
+    if self.state == "telegraph" or (self.attackType == "shockwave" and self.phase == 3 and self.stateTimer >= 0.15) then
         -- alternate between frame 1 and 2 during telegraph
         self.spriteFrame = math.floor(love.timer.getTime() * 10) % 2 == 0 and 1 or 2
     elseif not self.onGround then
@@ -477,8 +482,7 @@ function Boss:draw()
     end
 
     -- Tint
-    if self.state == "telegraph" then
-        love.graphics.setColor(1, 0.8, 0)
+    if self.state == "telegraph" or (self.attackType == "shockwave" and self.phase == 3 and self.stateTimer >= 0.15) then
     elseif self.state == "stagger" then
         love.graphics.setColor(0.4, 0.4, 0.6)
     elseif self.flashTimer > 0 then
