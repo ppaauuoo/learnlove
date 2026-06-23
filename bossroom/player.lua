@@ -28,6 +28,8 @@ function Player:new(world, x, y)
     self.dashCooldown = 0
     self.dashDir = 1
 
+    self.kickCooldown = 0
+
     self.walkSprites = Sprite.load("assets/helmet/helmet_walk_", 5, 0)
     self.attackSprites = Sprite.load("assets/helmet/helmet_attack_", 5, 0)
     self.animFrame = 0
@@ -45,6 +47,7 @@ function Player:update(dt, boss)
     Health.update(self, dt)
     self.attackCooldown = math.max(0, self.attackCooldown - dt)
     self.dashCooldown = math.max(0, self.dashCooldown - dt)
+    self.kickCooldown = math.max(0, self.kickCooldown - dt)
 
     -- Knockback
     if Knockback.update(self, dt) then
@@ -135,7 +138,8 @@ function Player:toggleHead()
 end
 
 function Player:kickHead()
-    if self.head then
+    if self.head and self.kickCooldown <= 0 then
+        self.kickCooldown = 1.5
         Head.kick(self.head, self.facing)
     end
 end

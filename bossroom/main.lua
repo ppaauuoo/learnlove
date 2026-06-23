@@ -384,7 +384,13 @@ function love.keypressed(key)
     if key == "h" then
         if player.head then
             Combat._kickRestoreZoom = Camera.zoom
-            Camera.zoom = 2
+            local oldZ = Camera.zoom
+            local newZ = 2
+            local px = player.x + player.w / 2
+            local py = player.y + player.h / 2
+            Camera.x = px - (px - Camera.x) * oldZ / newZ
+            Camera.y = py - (py - Camera.y) * oldZ / newZ
+            Camera.zoom = newZ
         end
         player:kickHead()
     end
