@@ -13,6 +13,7 @@ function Head.spawn(player)
         vy = -100,
         onGround = false,
         particleTimer = 0,
+        damageMultiplier = 1,
         world = player.world,
         item = { type = "head", entity = nil },
     }
@@ -53,6 +54,19 @@ function Head.update(h, dt, boss)
             Combat.shake(0.08)
             h.particleTimer = 0.15
         end
+
+        -- Damage boss on hit
+        if col.other.type == "boss" then
+            local be = col.other.entity
+            if be and be.hp > 0 and be.iframes <= 0 then
+                local dmg = h.damageMultiplier or 1
+                be.hp = be.hp - dmg
+                be.iframes = 0.1
+                be.hitsTaken = (be.hitsTaken or 0) + 1
+                Particles.spawn(col.touch.x, col.touch.y, 10)
+                Combat.shake(0.1)
+            end
+        end
     end
 
     -- Ground damping
@@ -63,11 +77,15 @@ function Head.update(h, dt, boss)
     end
 end
 
-function Head.kick(h, dir)
-    h.vx = dir * 400
-    h.vy = -300
-    Combat.freezeTimer = 1.0
-    Combat.slowShake(1.0, 10)
+function Head.kick(h, dir, charged)
+    local speed = charged and 1200 or 400
+    h.vx = dir * speed
+    h.vy = charged and -500 or -300
+    h.damageMultiplier = charged and 2 or 1
+    if charged then
+        Combat.freezeTimer = 1.0
+        Combat.slowShake(1.0, 10)
+    end
     Particles.spawn(h.x + h.w / 2, h.y + h.h / 2, 12)
 end
 

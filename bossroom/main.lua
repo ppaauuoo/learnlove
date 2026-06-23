@@ -15,6 +15,8 @@ local gameState = "playing" -- playing/win/dead
 local endTimer = 0
 local currentRoom = "hallway"
 local bossActive = false
+local kickCharge = 0
+local kickCharging = false
 
 local SCREEN_W, SCREEN_H = 800, 720  -- virtual resolution, scales to any window
 
@@ -79,6 +81,8 @@ function love.load()
     endTimer = 0
     debugMode = false
     currentRoom = "hallway"
+    kickCharge = 0
+    kickCharging = false
 
     -- Camera starts on player
     Camera.reset()
@@ -106,6 +110,22 @@ function love.update(dt)
     if Combat._kickZoomActive then
         Camera.zoom = currentRoom == "boss" and 1 or 1.25
         Combat._kickZoomActive = nil
+    end
+
+    -- Instant charged kick on hold
+    if kickCharging then
+        kickCharging = false
+        if love.keyboard.isDown("h") then
+            -- Held: charged kick immediately
+            if player.head then
+                Combat._kickZoomActive = true
+                local px = player.x + player.w / 2
+                local py = player.y + player.h / 2
+                Camera.startTransition(px - 400, py - 360, 0.3, 2)
+                Head.kick(player.head, player.facing, true)
+                player.kickCooldown = 1.5
+            end
+        end
     end
 
     if gameState == "playing" then
@@ -390,11 +410,19 @@ function love.keypressed(key)
     end
     if key == "h" then
         if player.head and player.kickCooldown <= 0 and Head.canKick(player.head, player, 80) then
-            Combat._kickZoomActive = true
-            local px = player.x + player.w / 2
-            local py = player.y + player.h / 2
-            Camera.startTransition(px - 400, py - 360, 0.3, 2)
-            player:kickHead()
+            kickCharging = true
+            kickCharge = 0
+        end
+    end
+end
+
+function love.keyreleased(key)
+    if key == "h" and kickCharging then
+        kickCharging = false
+        -- Released before next frame: quick tap, normal kick
+        if player and player.head and player.kickCooldown <= 0 then
+            Head.kick(player.head, player.facing, false)
+            player.kickCooldown = 1.5
         end
     end
 end
