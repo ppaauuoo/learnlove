@@ -124,6 +124,22 @@ function Player:update(dt, boss)
             Combat.resolveDamage(self, boss, nil)
         end
     end
+
+    -- Destroy head with nail hit (only when not invincible)
+    if self.attackTimer > 0 and self.head and not self.head.invincible then
+        local hb = self:getNailHitbox()
+        local items, len = self.world:queryRect(hb.x, hb.y, hb.w, hb.h, function(item)
+            return item.type == "head"
+        end)
+        if len > 0 then
+            local cx, cy = self.head.x + self.head.w / 2, self.head.y + self.head.h / 2
+            self.head.dead = true
+            Head.remove(self.head)
+            self.head = nil
+            Particles.spawn(cx, cy, 15)
+            Combat.shake(0.15)
+        end
+    end
 end
 
 function Player:toggleHead()

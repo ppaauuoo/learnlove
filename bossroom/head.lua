@@ -13,6 +13,9 @@ function Head.spawn(player)
         vy = -100,
         onGround = false,
         particleTimer = 0,
+        invincible = false,
+        invincibleTimer = 0,
+        dead = false,
         damageMultiplier = 1,
         world = player.world,
         item = { type = "head", entity = nil },
@@ -24,6 +27,10 @@ end
 
 function Head.update(h, dt, boss)
     h.particleTimer = math.max(0, h.particleTimer - dt)
+    if h.invincible then
+        h.invincibleTimer = h.invincibleTimer - dt
+        if h.invincibleTimer <= 0 then h.invincible = false end
+    end
     h.vy = h.vy + 1200 * dt
 
     local goalX = h.x + h.vx * dt
@@ -55,16 +62,28 @@ function Head.update(h, dt, boss)
             h.particleTimer = 0.15
         end
 
-        -- Damage boss on hit
+        -- Boss destroys head (unless invincible from a kick)
         if col.other.type == "boss" then
             local be = col.other.entity
-            if be and be.hp > 0 and be.iframes <= 0 then
-                local dmg = h.damageMultiplier or 1
-                be.hp = be.hp - dmg
-                be.iframes = 0.1
-                be.hitsTaken = (be.hitsTaken or 0) + 1
-                Particles.spawn(col.touch.x, col.touch.y, 10)
-                Combat.shake(0.1)
+            if be and be.hp > 0 then
+                if h.invincible then
+                    -- Damage boss
+                    if be.iframes <= 0 then
+                        local dmg = h.damageMultiplier or 1
+                        be.hp = be.hp - dmg
+                        be.iframes = 0.1
+                        be.hitsTaken = (be.hitsTaken or 0) + 1
+                        Particles.spawn(col.touch.x, col.touch.y, 10)
+                        Combat.shake(0.1)
+                    end
+                else
+                    -- Destroy head
+                    Particles.spawn(col.touch.x, col.touch.y, 15)
+                    Combat.shake(0.15)
+                    h.dead = true
+                    Head.remove(h)
+                    return
+                end
             end
         end
     end
@@ -82,6 +101,8 @@ function Head.kick(h, dir, charged)
     h.vx = dir * speed
     h.vy = charged and -500 or -300
     h.damageMultiplier = charged and 2 or 1
+    h.invincible = true
+    h.invincibleTimer = 0.5
     if charged then
         Combat.freezeTimer = 1.0
         Combat.slowShake(1.0, 10)
@@ -90,7 +111,16 @@ function Head.kick(h, dir, charged)
 end
 
 function Head.draw(h)
-    love.graphics.setColor(1, 0.85, 0.65)
+    if not h.invincible then
+        -- Flicker when destructible
+        if math.floor(love.timer.getTime() * 12) % 3 == 0 then
+            love.graphics.setColor(1, 0.85, 0.65, 0.6)
+        else
+            love.graphics.setColor(1, 0.85, 0.65)
+        end
+    else
+        love.graphics.setColor(1, 0.85, 0.65)
+    end
     love.graphics.circle("fill", h.x + h.w / 2, h.y + h.h / 2, h.w / 2)
     love.graphics.setColor(0.15, 0.12, 0.1)
     love.graphics.circle("line", h.x + h.w / 2, h.y + h.h / 2, h.w / 2)

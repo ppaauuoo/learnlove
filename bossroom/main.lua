@@ -112,12 +112,12 @@ function love.update(dt)
         Combat._kickZoomActive = nil
     end
 
-    -- Instant charged kick on hold
+    -- Charge timer: short delay before deciding hold vs tap
     if kickCharging then
-        kickCharging = false
-        if love.keyboard.isDown("h") then
-            -- Held: charged kick immediately
-            if player.head then
+        kickCharge = kickCharge + dt
+        if kickCharge >= 0.08 then
+            kickCharging = false
+            if love.keyboard.isDown("h") and player.head then
                 Combat._kickZoomActive = true
                 local px = player.x + player.w / 2
                 local py = player.y + player.h / 2
@@ -169,6 +169,7 @@ function love.update(dt)
         -- Detached head
         if player.head then
             Head.update(player.head, dt, boss)
+            if player.head.dead then player.head = nil end
         end
 
         -- Win/lose check
