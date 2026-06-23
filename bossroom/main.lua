@@ -2,7 +2,8 @@
 require("deps.lick")
 local bump = require("deps.bump")
 local Combat = require("combat")
-local Entities = require("entities")
+local Player = require("player")
+local Boss = require("boss")
 local Particles = require("components.particles")
 local Camera = require("components.camera")
 local Rooms = require("rooms")
@@ -26,7 +27,7 @@ function love.load()
 
     -- Spawn player in hallway
     local spawn = Rooms.list.hallway.playerSpawn
-    player = Entities.Player(world, spawn.x, spawn.y)
+    player = Player(world, spawn.x, spawn.y)
 
     -- Stop all previous sounds if restarting
     if SFX then
@@ -63,7 +64,7 @@ function love.load()
 
     -- Spawn boss in boss room (inactive until player enters)
     local bossSpawn = Rooms.list.boss.bossSpawn
-    boss = Entities.Boss(world, bossSpawn.x, bossSpawn.y)
+    boss = Boss(world, bossSpawn.x, bossSpawn.y)
     bossActive = false
 
     -- Reset state
