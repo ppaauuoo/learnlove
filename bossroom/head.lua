@@ -66,8 +66,9 @@ end
 function Head.kick(h, dir)
     h.vx = dir * 400
     h.vy = -300
-    Combat.shake(0.12)
-    Particles.spawn(h.x + h.w / 2, h.y + h.h / 2, 10)
+    Combat.freezeTimer = 1.0
+    Combat.slowShake(1.0, 10)
+    Particles.spawn(h.x + h.w / 2, h.y + h.h / 2, 12)
 end
 
 function Head.draw(h)

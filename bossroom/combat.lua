@@ -11,9 +11,16 @@ Combat.freezeTimer = 0
 Combat.shakeTimer = 0
 Combat.shakeX = 0
 Combat.shakeY = 0
+Combat.slowShakeTimer = 0
+Combat.slowShakeIntensity = 0
 
 function Combat.shake(duration, intensity)
     Combat.shakeTimer = duration or 0.1
+end
+
+function Combat.slowShake(duration, intensity)
+    Combat.slowShakeTimer = duration or 0.5
+    Combat.slowShakeIntensity = intensity or 8
 end
 
 function Combat.resolveDamage(source, target, game)
@@ -46,7 +53,12 @@ function Combat.resolveDamage(source, target, game)
 end
 
 function Combat.updateShake(dt)
-    if Combat.shakeTimer > 0 then
+    if Combat.slowShakeTimer > 0 then
+        Combat.slowShakeTimer = Combat.slowShakeTimer - dt
+        local t = love.timer.getTime()
+        Combat.shakeX = math.sin(t * 10) * Combat.slowShakeIntensity
+        Combat.shakeY = math.cos(t * 8) * Combat.slowShakeIntensity * 0.6
+    elseif Combat.shakeTimer > 0 then
         Combat.shakeTimer = Combat.shakeTimer - dt
         Combat.shakeX = math.random(-3, 3)
         Combat.shakeY = math.random(-3, 3)

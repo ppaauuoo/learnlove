@@ -97,6 +97,12 @@ function love.update(dt)
         return
     end
 
+    -- Restore camera zoom after kick freeze ends
+    if Combat._kickRestoreZoom then
+        Camera.zoom = Combat._kickRestoreZoom
+        Combat._kickRestoreZoom = nil
+    end
+
     if gameState == "playing" then
         -- Check room transitions
         local roomName, room = Rooms.getRoomAt(player.x + player.w / 2, player.y + player.h / 2)
@@ -376,6 +382,10 @@ function love.keypressed(key)
         player:toggleHead()
     end
     if key == "h" then
+        if player.head then
+            Combat._kickRestoreZoom = Camera.zoom
+            Camera.zoom = 2
+        end
         player:kickHead()
     end
 end
