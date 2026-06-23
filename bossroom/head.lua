@@ -85,11 +85,14 @@ function Head.remove(h)
     h.world:remove(h.item)
 end
 
-function Head.canReattach(h, player)
+function Head.nearby(h, player, range)
     local cx, cy = h.x + h.w / 2, h.y + h.h / 2
     local px, py = player.x + player.w / 2, player.y + player.h / 2
     local dx, dy = cx - px, cy - py
-    return dx * dx + dy * dy < 65 * 65
+    return dx * dx + dy * dy < (range or 65) * (range or 65)
 end
+
+Head.canReattach = Head.nearby
+Head.canKick = Head.nearby
 
 return Head

@@ -90,6 +90,11 @@ end
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
+    -- Camera always updates (transitions need to animate during freeze)
+    if player then
+        Camera.update(dt, player.x + player.w / 2, player.y + player.h / 2, SCREEN_W, SCREEN_H)
+    end
+
     -- Hitstop freeze
     if Combat.freezeTimer > 0 then
         Combat.freezeTimer = Combat.freezeTimer - dt
@@ -98,9 +103,9 @@ function love.update(dt)
     end
 
     -- Restore camera zoom after kick freeze ends
-    if Combat._kickRestoreZoom then
-        Camera.zoom = Combat._kickRestoreZoom
-        Combat._kickRestoreZoom = nil
+    if Combat._kickZoomActive then
+        Camera.zoom = currentRoom == "boss" and 1 or 1.25
+        Combat._kickZoomActive = nil
     end
 
     if gameState == "playing" then
@@ -108,6 +113,11 @@ function love.update(dt)
         local roomName, room = Rooms.getRoomAt(player.x + player.w / 2, player.y + player.h / 2)
 
         if roomName ~= currentRoom then
+            -- Reattach head on room change
+            if player.head then
+                Head.remove(player.head)
+                player.head = nil
+            end
             currentRoom = roomName
             Camera.setBounds(room)
             Camera.zoom = roomName == "boss" and 1 or 1.25
@@ -163,9 +173,6 @@ function love.update(dt)
         horrorFade = horrorFade - dt
         SFX.horrorScream:setVolume(0.02 * math.max(0, horrorFade / 1.5))
     end
-
-    -- Camera follows player center
-    Camera.update(dt, player.x + player.w / 2, player.y + player.h / 2, SCREEN_W, SCREEN_H)
 
     Combat.updateParticles(dt)
     Combat.updateShake(dt)
@@ -382,17 +389,13 @@ function love.keypressed(key)
         player:toggleHead()
     end
     if key == "h" then
-        if player.head then
-            Combat._kickRestoreZoom = Camera.zoom
-            local oldZ = Camera.zoom
-            local newZ = 2
+        if player.head and player.kickCooldown <= 0 and Head.canKick(player.head, player, 80) then
+            Combat._kickZoomActive = true
             local px = player.x + player.w / 2
             local py = player.y + player.h / 2
-            Camera.x = px - (px - Camera.x) * oldZ / newZ
-            Camera.y = py - (py - Camera.y) * oldZ / newZ
-            Camera.zoom = newZ
+            Camera.startTransition(px - 400, py - 360, 0.3, 2)
+            player:kickHead()
         end
-        player:kickHead()
     end
 end
 

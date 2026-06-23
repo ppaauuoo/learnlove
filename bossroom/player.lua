@@ -138,7 +138,7 @@ function Player:toggleHead()
 end
 
 function Player:kickHead()
-    if self.head and self.kickCooldown <= 0 then
+    if self.head and Head.canKick(self.head, self, 80) and self.kickCooldown <= 0 then
         self.kickCooldown = 1.5
         Head.kick(self.head, self.facing)
     end
