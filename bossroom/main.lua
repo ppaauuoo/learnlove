@@ -4,6 +4,7 @@ local bump = require("deps.bump")
 local Combat = require("combat")
 local Player = require("player")
 local Boss = require("boss")
+local Head = require("head")
 local Particles = require("components.particles")
 local Camera = require("components.camera")
 local Rooms = require("rooms")
@@ -129,6 +130,11 @@ function love.update(dt)
             player:update(dt, nil)
         end
 
+        -- Detached head
+        if player.head then
+            Head.update(player.head, dt, boss)
+        end
+
         -- Win/lose check
         if bossActive and boss.hp <= 0 then
             gameState = "win"
@@ -228,6 +234,9 @@ function love.draw()
         boss:draw()
     end
     player:draw()
+    if player.head then
+        Head.draw(player.head)
+    end
 
     -- Particles
     Combat.drawParticles()
@@ -362,6 +371,12 @@ function love.keypressed(key)
     end
     if key == "c" or key == "k" then
         player:dash()
+    end
+    if key == "n" then
+        player:toggleHead()
+    end
+    if key == "h" then
+        player:kickHead()
     end
 end
 

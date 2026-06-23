@@ -5,6 +5,7 @@ local Physics = require("components.physics")
 local Health = require("components.health")
 local Knockback = require("components.knockback")
 local Sprite = require("components.sprite")
+local Head = require("head")
 
 local Player = Object:extend()
 
@@ -34,6 +35,8 @@ function Player:new(world, x, y)
 
     self.attackEffect = love.graphics.newImage("assets/helmet/Attack.png")
     self.attackEffect:setFilter("nearest", "nearest")
+
+    self.head = nil -- detached head entity, nil when attached
 end
 
 function Player:update(dt, boss)
@@ -117,6 +120,23 @@ function Player:update(dt, boss)
         if len > 0 then
             Combat.resolveDamage(self, boss, nil)
         end
+    end
+end
+
+function Player:toggleHead()
+    if self.head then
+        if Head.canReattach(self.head, self) then
+            Head.remove(self.head)
+            self.head = nil
+        end
+    else
+        self.head = Head.spawn(self)
+    end
+end
+
+function Player:kickHead()
+    if self.head then
+        Head.kick(self.head, self.facing)
     end
 end
 
