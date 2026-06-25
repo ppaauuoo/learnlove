@@ -75,6 +75,9 @@ function love.load()
     Combat.shakeTimer = 0
     Combat.shakeX = 0
     Combat.shakeY = 0
+    Combat.slowShakeTimer = 0
+    Combat.slowShakeIntensity = 0
+    Combat._kickZoomActive = nil
     Particles.reset()
     Rooms.door.sealed = false
     gameState = "playing"
@@ -108,7 +111,8 @@ function love.update(dt)
 
     -- Restore camera zoom after kick freeze ends
     if Combat._kickZoomActive then
-        Camera.zoom = currentRoom == "boss" and 1 or 1.25
+        local targetZoom = currentRoom == "boss" and 1 or 1.25
+        Camera.startTransition(Camera.x, Camera.y, 0.2, targetZoom)
         Combat._kickZoomActive = nil
     end
 
@@ -147,6 +151,9 @@ function love.update(dt)
                 horrorFade = 1.5
                 SFX.lowTempo:stop()
                 SFX.highTempo:play()
+                -- Slow pan to center of boss room (keeps camera under transition
+                -- control so smooth follow can't fight it before entrance zooms in)
+                Camera.startTransition(room.x + room.w / 2 - SCREEN_W / 2, room.y + room.h / 2 - SCREEN_H / 2, 10)
             end
         end
 
@@ -179,6 +186,7 @@ function love.update(dt)
             if boss._requestSnap then
                 boss._requestSnap = nil
                 Camera.transition.active = false
+                Camera.transition.toZoom = nil
                 Camera.zoom = 1
                 local px = player.x + player.w / 2 - SCREEN_W / 2
                 local py = player.y + player.h / 2 - SCREEN_H / 2
@@ -343,6 +351,17 @@ function drawUI()
         love.graphics.rectangle("fill", barX, barY, barW * pct, barH)
         love.graphics.setColor(1, 1, 1)
         love.graphics.rectangle("line", barX, barY, barW, barH)
+    end
+
+    -- Screen flash on death/win (fades over the pause)
+    if gameState ~= "playing" and endTimer > 0 then
+        local alpha = endTimer / 1.5
+        if gameState == "win" then
+            love.graphics.setColor(1, 0.95, 0.7, alpha * 0.35)
+        else
+            love.graphics.setColor(0.8, 0.1, 0.1, alpha * 0.5)
+        end
+        love.graphics.rectangle("fill", 0, 0, SCREEN_W, SCREEN_H)
     end
 
     -- End state text

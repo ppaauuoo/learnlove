@@ -74,6 +74,8 @@ function Boss:update(dt, player)
     if self.state ~= "stagger" and self.hitsTaken >= self.staggerThreshold then
         SFX.critical:play()
         SFX.bigGuyScream:play()
+        Combat.spawnParticles(self.x + self.w / 2, self.y + self.h / 2, 10)
+        Combat.shake(0.15)
         self:enterState("stagger")
     end
 
@@ -234,8 +236,6 @@ function Boss:enterState(state)
     self.attackHitbox = nil
     self.attackType = nil
     self.visible = true
-    self._leapShook = false
-
     if state == "idle" then
         self.stateTimer = 0.5 + math.random() * 1.0
     elseif state == "telegraph" then
@@ -276,9 +276,11 @@ function Boss:beginAttack(player)
         end
     elseif self.attackType == "shockwave" then
         if self.phase == 3 then
+            Particles.spawn(self.x + self.w / 2, self.y + self.h / 2, 15)
             self.x = 2680
             self.y = 480
             self.world:update(self.item, self.x, self.y)
+            Particles.spawn(self.x + self.w / 2, self.y + self.h / 2, 15)
         end
         self.stateTimer = 0.15
         self.vx = 0
@@ -348,7 +350,7 @@ function Boss:draw()
     -- Entrance animation: falling dark, then charge sprite freeze
     if self.state == "entering" then
         if self.entrancePhase == 1 then
-            love.graphics.setColor(0.15, 0.15, 0.2)
+            love.graphics.setColor(0.35, 0.35, 0.45)
             self.spriteFrame = 3
         elseif self.entrancePhase == 2 then
             love.graphics.setColor(1, 1, 1)
@@ -374,7 +376,7 @@ function Boss:draw()
     elseif self.state == "stagger" then
         love.graphics.setColor(0.4, 0.4, 0.6)
     elseif self.flashTimer > 0 then
-        love.graphics.setColor(1, 1, 1)
+        love.graphics.setColor(1.3, 1.3, 1.3)
     else
         love.graphics.setColor(1, 1, 1)
     end

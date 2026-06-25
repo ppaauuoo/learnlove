@@ -104,8 +104,8 @@ function Head.kick(h, dir, charged)
     h.invincible = true
     h.invincibleTimer = 0.5
     if charged then
-        Combat.freezeTimer = 1.0
-        Combat.slowShake(1.0, 10)
+        Combat.freezeTimer = 0.5
+        Combat.slowShake(0.5, 10)
     end
     Particles.spawn(h.x + h.w / 2, h.y + h.h / 2, 12)
 end
@@ -137,7 +137,8 @@ function Head.nearby(h, player, range)
     local cx, cy = h.x + h.w / 2, h.y + h.h / 2
     local px, py = player.x + player.w / 2, player.y + player.h / 2
     local dx, dy = cx - px, cy - py
-    return dx * dx + dy * dy < (range or 65) * (range or 65)
+    local r = range or 65
+    return dx * dx + dy * dy < r * r
 end
 
 Head.canReattach = Head.nearby
