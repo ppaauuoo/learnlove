@@ -20,6 +20,7 @@ function Head.spawn(player)
         invincibleTimer = 0,
         dead = false,
         damageMultiplier = 1,
+        facing = player.facing,
         world = player.world,
         item = { type = "head", entity = nil },
     }
@@ -46,6 +47,7 @@ function Head.update(h, dt, boss)
 
     h.x, h.y = actualX, actualY
     h.onGround = false
+    if h.vx ~= 0 then h.facing = h.vx > 0 and 1 or -1 end
 
     for i = 1, len do
         local col = cols[i]
@@ -120,7 +122,7 @@ function Head.draw(h)
     elseif math.floor(love.timer.getTime() * 12) % 3 == 0 then
         love.graphics.setColor(1, 1, 1, 0.6)
     end
-    Sprite.draw(headImage, h.x, h.y, h.w, h.h, 1)
+    Sprite.draw(headImage, h.x, h.y, h.w, h.h, h.facing or 1)
 end
 
 function Head.remove(h)
