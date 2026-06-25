@@ -254,6 +254,9 @@ function love.draw()
             "JUMP:  Up / W / Space",
             "ATTACK:  X / J / Left Click",
             "DASH:  C / K / Right Click",
+            "REATTACH/DETACH HEAD:  N",
+            "LIGHT KICK: Tap H",
+            "CHARGE KICK: Hold H",
         }
         for i, line in ipairs(lines) do
             -- Glow layers
