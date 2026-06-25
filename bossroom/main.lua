@@ -142,19 +142,26 @@ function love.update(dt)
             Camera.setBounds(room)
             Camera.zoom = roomName == "boss" and 1 or 1.25
 
-            -- Entering boss room: activate boss, seal door
-            if roomName == "boss" and not bossActive then
+            -- Fade out horror scream, switch BGM on entering boss room
+            if roomName == "boss" then
+                horrorFade = 1.5
+                SFX.lowTempo:stop()
+                SFX.highTempo:play()
+            end
+        end
+
+        -- Boss entrance triggers when player walks 25% into the room
+        if roomName == "boss" and not bossActive then
+            local triggerX = 1600 + 1440 * 0.25
+            if player.x + player.w / 2 >= triggerX then
                 bossActive = true
+                boss:startEntrance()
                 Rooms.sealDoor(world)
                 -- Push player right of the door so bump doesn't shove them back
                 if player.x + player.w > Rooms.door.x and player.x < Rooms.door.x + Rooms.door.w then
                     player.x = Rooms.door.x + Rooms.door.w
                     world:update(player.item, player.x, player.y)
                 end
-                -- Fade out horror scream, switch BGM
-                horrorFade = 1.5
-                SFX.lowTempo:stop()
-                SFX.highTempo:play()
             end
         end
 
@@ -162,6 +169,22 @@ function love.update(dt)
         if bossActive then
             player:update(dt, boss)
             boss:update(dt, player)
+            -- Boss entrance camera signals
+            if boss._requestZoom then
+                boss._requestZoom = nil
+                local bcx = boss.x + boss.w / 2
+                local bcy = boss.y + boss.h / 2
+                Camera.startTransition(bcx - SCREEN_W / 2, bcy - SCREEN_H / 2, 0.5, 1.5)
+            end
+            if boss._requestSnap then
+                boss._requestSnap = nil
+                Camera.transition.active = false
+                Camera.zoom = 1
+                local px = player.x + player.w / 2 - SCREEN_W / 2
+                local py = player.y + player.h / 2 - SCREEN_H / 2
+                Camera.x = px
+                Camera.y = py
+            end
         else
             player:update(dt, nil)
         end

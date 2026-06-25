@@ -1,0 +1,202 @@
+{
+  ".luarc.json": {
+    "mtime": 1781787375.168033,
+    "ast_hash": "157e58784922d1e5f49233ab8961caa8",
+    "semantic_hash": "157e58784922d1e5f49233ab8961caa8"
+  },
+  "boss.lua": {
+    "mtime": 1782227039.1979032,
+    "ast_hash": "a70c73286b94220599079bb85badbd25",
+    "semantic_hash": "a70c73286b94220599079bb85badbd25"
+  },
+  "combat.lua": {
+    "mtime": 1782227682.9580028,
+    "ast_hash": "d123cd7f669650481a7b7aa939c6e25e",
+    "semantic_hash": "d123cd7f669650481a7b7aa939c6e25e"
+  },
+  "components/camera.lua": {
+    "mtime": 1782228787.2946866,
+    "ast_hash": "aa4b3096426a831c5ba4b52165305f5b",
+    "semantic_hash": "aa4b3096426a831c5ba4b52165305f5b"
+  },
+  "components/health.lua": {
+    "mtime": 1781787375.170583,
+    "ast_hash": "7ac3ca79bfc67ea0a8fea4d8a68e72e6",
+    "semantic_hash": "7ac3ca79bfc67ea0a8fea4d8a68e72e6"
+  },
+  "components/knockback.lua": {
+    "mtime": 1781787375.1715877,
+    "ast_hash": "4e91f557cbd04755254092f75b192854",
+    "semantic_hash": "4e91f557cbd04755254092f75b192854"
+  },
+  "components/particles.lua": {
+    "mtime": 1781787375.172094,
+    "ast_hash": "112e7463a12d48cb9429aaa877892913",
+    "semantic_hash": "112e7463a12d48cb9429aaa877892913"
+  },
+  "components/physics.lua": {
+    "mtime": 1781787375.172094,
+    "ast_hash": "9eb8b8585ec45ea51d5302399325f350",
+    "semantic_hash": "9eb8b8585ec45ea51d5302399325f350"
+  },
+  "components/sprite.lua": {
+    "mtime": 1781804992.0982852,
+    "ast_hash": "0b1374d63aba309d4f508c0e89748622",
+    "semantic_hash": "0b1374d63aba309d4f508c0e89748622"
+  },
+  "deps/bump.lua": {
+    "mtime": 1781806035.2465303,
+    "ast_hash": "550a33e78af02194424a06e9d1b9ece9",
+    "semantic_hash": "550a33e78af02194424a06e9d1b9ece9"
+  },
+  "deps/classic.lua": {
+    "mtime": 1781806035.258308,
+    "ast_hash": "f80457e0ef3dca313b5475a351f11efd",
+    "semantic_hash": "f80457e0ef3dca313b5475a351f11efd"
+  },
+  "deps/lick.lua": {
+    "mtime": 1781805996.1308575,
+    "ast_hash": "540179ba4ae0b9b8220432f52f6bfccc",
+    "semantic_hash": "540179ba4ae0b9b8220432f52f6bfccc"
+  },
+  "entities.lua": {
+    "mtime": 1782227045.9879878,
+    "ast_hash": "36dc7a5ffd5e13a50912c112af64e12d",
+    "semantic_hash": "36dc7a5ffd5e13a50912c112af64e12d"
+  },
+  "head.lua": {
+    "mtime": 1782230209.8221838,
+    "ast_hash": "83f961232abb0610b572fc4a2aa418a5",
+    "semantic_hash": "83f961232abb0610b572fc4a2aa418a5"
+  },
+  "main.lua": {
+    "mtime": 1782230570.5606573,
+    "ast_hash": "dab08bc1698a5f8415a0322c1c76a473",
+    "semantic_hash": "dab08bc1698a5f8415a0322c1c76a473"
+  },
+  "player.lua": {
+    "mtime": 1782230215.15901,
+    "ast_hash": "2fb1b874e1ea887c2bc4b4e22e3d4fbe",
+    "semantic_hash": "2fb1b874e1ea887c2bc4b4e22e3d4fbe"
+  },
+  "rooms.lua": {
+    "mtime": 1781806095.4560099,
+    "ast_hash": "c6d185cc1426b94b3aabf6e42181a694",
+    "semantic_hash": "c6d185cc1426b94b3aabf6e42181a694"
+  },
+  "assets/boss/boss_frame_0.png": {
+    "mtime": 1781797355.432788,
+    "ast_hash": "cceee8730ab258027d8736796399ac42",
+    "semantic_hash": "cceee8730ab258027d8736796399ac42"
+  },
+  "assets/boss/boss_frame_1.png": {
+    "mtime": 1781797355.433797,
+    "ast_hash": "4a0ae0d5545125c269a27d49162fbeb8",
+    "semantic_hash": "4a0ae0d5545125c269a27d49162fbeb8"
+  },
+  "assets/boss/boss_frame_2.png": {
+    "mtime": 1781797355.4343057,
+    "ast_hash": "7d43ed1f6a2c8a3942168115d01d8edd",
+    "semantic_hash": "7d43ed1f6a2c8a3942168115d01d8edd"
+  },
+  "assets/boss/boss_frame_3.png": {
+    "mtime": 1781797355.4350603,
+    "ast_hash": "822282226dcb5eb73d69e13f60134a8c",
+    "semantic_hash": "822282226dcb5eb73d69e13f60134a8c"
+  },
+  "assets/helmet/Attack.png": {
+    "mtime": 1781800925.9828734,
+    "ast_hash": "387320b44827a4c7f30fc1e52ba6a087",
+    "semantic_hash": "387320b44827a4c7f30fc1e52ba6a087"
+  },
+  "assets/helmet/helmet_attack_0.png": {
+    "mtime": 1781800744.3155994,
+    "ast_hash": "f645d25a2f33c2c03317ee160f3f5fd8",
+    "semantic_hash": "f645d25a2f33c2c03317ee160f3f5fd8"
+  },
+  "assets/helmet/helmet_attack_1.png": {
+    "mtime": 1781800744.317114,
+    "ast_hash": "bb27d79cbc97d6bf845a3f6371baab61",
+    "semantic_hash": "bb27d79cbc97d6bf845a3f6371baab61"
+  },
+  "assets/helmet/helmet_attack_2.png": {
+    "mtime": 1781800744.31812,
+    "ast_hash": "09653be4349eed7a6a090f2fd72b8cff",
+    "semantic_hash": "09653be4349eed7a6a090f2fd72b8cff"
+  },
+  "assets/helmet/helmet_attack_3.png": {
+    "mtime": 1781800744.3186276,
+    "ast_hash": "3309bfdd9993b74e8cd7a879dab28ea0",
+    "semantic_hash": "3309bfdd9993b74e8cd7a879dab28ea0"
+  },
+  "assets/helmet/helmet_attack_4.png": {
+    "mtime": 1781800744.3186276,
+    "ast_hash": "a1fccf972039c9606516bbfefebb0de1",
+    "semantic_hash": "a1fccf972039c9606516bbfefebb0de1"
+  },
+  "assets/helmet/helmet_walk_0.png": {
+    "mtime": 1781800744.2532966,
+    "ast_hash": "44dae56d633f10f76556219dda35c905",
+    "semantic_hash": "44dae56d633f10f76556219dda35c905"
+  },
+  "assets/helmet/helmet_walk_1.png": {
+    "mtime": 1781800744.2538042,
+    "ast_hash": "0dfdb137a02a8d8cc827f82c4ff57542",
+    "semantic_hash": "0dfdb137a02a8d8cc827f82c4ff57542"
+  },
+  "assets/helmet/helmet_walk_2.png": {
+    "mtime": 1781800744.2548099,
+    "ast_hash": "87d6bc3310b6f9f1e87bfbd27b5185bd",
+    "semantic_hash": "87d6bc3310b6f9f1e87bfbd27b5185bd"
+  },
+  "assets/helmet/helmet_walk_3.png": {
+    "mtime": 1781800744.255317,
+    "ast_hash": "887ceb44b2aedf0d512d7f5c36510cb3",
+    "semantic_hash": "887ceb44b2aedf0d512d7f5c36510cb3"
+  },
+  "assets/helmet/helmet_walk_4.png": {
+    "mtime": 1781800744.255816,
+    "ast_hash": "d873d1ef35653db4fc9e2d7ed2ace01c",
+    "semantic_hash": "d873d1ef35653db4fc9e2d7ed2ace01c"
+  },
+  "assets/sound/BigGuyScream.wav": {
+    "mtime": 1781803372.3483374,
+    "ast_hash": "7eb7e205d48279fb685cb5ff683f9f38",
+    "semantic_hash": "7eb7e205d48279fb685cb5ff683f9f38"
+  },
+  "assets/sound/Critical.wav": {
+    "mtime": 1779711924.596624,
+    "ast_hash": "83f24ef04a27b2b9c84101c6b1cb56cd",
+    "semantic_hash": "83f24ef04a27b2b9c84101c6b1cb56cd"
+  },
+  "assets/sound/HighTempo.wav": {
+    "mtime": 1781803077.4892337,
+    "ast_hash": "c2125f2d6bd146480051bd3539121392",
+    "semantic_hash": "c2125f2d6bd146480051bd3539121392"
+  },
+  "assets/sound/HorrorScream.wav": {
+    "mtime": 1781803369.3401754,
+    "ast_hash": "73526d6b98ff253df9728e9fc78802b1",
+    "semantic_hash": "73526d6b98ff253df9728e9fc78802b1"
+  },
+  "assets/sound/LowTempo.wav": {
+    "mtime": 1781803237.7286048,
+    "ast_hash": "57134a5131991bb7ad5571b71ac7b00a",
+    "semantic_hash": "57134a5131991bb7ad5571b71ac7b00a"
+  },
+  "assets/sound/ShortSwing.wav": {
+    "mtime": 1779711965.2490883,
+    "ast_hash": "2a8c9d3565bf45b62171dec546fda731",
+    "semantic_hash": "2a8c9d3565bf45b62171dec546fda731"
+  },
+  "assets/sound/dash.wav": {
+    "mtime": 1781804556.6291575,
+    "ast_hash": "6c3976f8d48d242c64520afa2a4852c1",
+    "semantic_hash": "6c3976f8d48d242c64520afa2a4852c1"
+  },
+  "assets/sound/smash.wav": {
+    "mtime": 1781804336.0604467,
+    "ast_hash": "ea61af1610564736eb383d867ed2c6a1",
+    "semantic_hash": "ea61af1610564736eb383d867ed2c6a1"
+  }
+}

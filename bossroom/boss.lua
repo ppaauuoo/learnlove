@@ -38,6 +38,9 @@ function Boss:new(world, x, y)
     self.sprites = loadSprites()
     self.spriteFrame = 0
     self.visible = true
+    self.entranceActive = false
+    self.entrancePhase = 0
+    self.entranceTimer = 0
 end
 
 function Boss:update(dt, player)
@@ -47,6 +50,11 @@ function Boss:update(dt, player)
         end
         self.state = "dead"
         self.attackHitbox = nil
+        return
+    end
+
+    if self.state == "entering" then
+        self:updateEntrance(dt)
         return
     end
 
@@ -165,6 +173,62 @@ function Boss:update(dt, player)
     end
 end
 
+function Boss:startEntrance()
+    self.state = "entering"
+    self.entranceActive = true
+    self.entrancePhase = 1
+    self.entranceTimer = 0
+    self.y = -300
+    self.vy = 0
+    self.vx = 0
+    self.facing = -1
+    self.world:update(self.item, self.x, self.y)
+end
+
+function Boss:updateEntrance(dt)
+    if self.entrancePhase == 1 then
+        -- Falling from above the screen
+        self.vy = self.vy + 1200 * dt
+        self.y = self.y + self.vy * dt
+        self.world:update(self.item, self.x, self.y)
+        -- Land on the boss room floor
+        if self.y + self.h >= 680 then
+            self.y = 680 - self.h
+            self.vy = 0
+            self.vx = 0
+            self.onGround = true
+            self.world:update(self.item, self.x, self.y)
+            self:enterEntrancePhase(2)
+        end
+    elseif self.entrancePhase == 2 then
+        self.entranceTimer = self.entranceTimer + dt
+        -- At 0.75s: scream + shake while still at charge sprite, zoomed
+        if self.entranceTimer >= 0.75 and not self._screamed then
+            self._screamed = true
+            SFX.bigGuyScream:play()
+            Combat.shake(0.5)
+        end
+        -- At 1.5s total: snap back, go idle
+        if self.entranceTimer >= 1.5 then
+            self:enterEntrancePhase(3)
+        end
+    end
+end
+
+function Boss:enterEntrancePhase(phase)
+    self.entrancePhase = phase
+    if phase == 2 then
+        SFX.smash:play()
+        self._requestZoom = true
+        self.entranceTimer = 0
+    elseif phase == 3 then
+        self._requestSnap = true
+        self.state = "idle"
+        self.stateTimer = 0.5 + math.random() * 1.0
+        self.entranceActive = false
+    end
+end
+
 function Boss:enterState(state)
     self.state = state
     self.attackHitbox = nil
@@ -212,7 +276,7 @@ function Boss:beginAttack(player)
         end
     elseif self.attackType == "shockwave" then
         if self.phase == 3 then
-            self.x = 1950
+            self.x = 2680
             self.y = 480
             self.world:update(self.item, self.x, self.y)
         end
@@ -280,6 +344,19 @@ end
 function Boss:draw()
     if not self.visible then return end
     if self.hp <= 0 then return end
+
+    -- Entrance animation: falling dark, then charge sprite freeze
+    if self.state == "entering" then
+        if self.entrancePhase == 1 then
+            love.graphics.setColor(0.15, 0.15, 0.2)
+            self.spriteFrame = 3
+        elseif self.entrancePhase == 2 then
+            love.graphics.setColor(1, 1, 1)
+            self.spriteFrame = 2
+        end
+        Sprite.draw(self.sprites[self.spriteFrame], self.x, self.y, self.w, self.h, -self.facing)
+        return
+    end
 
     -- Choose sprite frame
     if self.state == "telegraph" then
