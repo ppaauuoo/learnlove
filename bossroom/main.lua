@@ -322,6 +322,19 @@ function drawUI()
     )
     local ox = (love.graphics.getWidth() - SCREEN_W * scale) / 2
     local oy = (love.graphics.getHeight() - SCREEN_H * scale) / 2
+
+    -- Screen flash on death/win (raw screen coords, covers letterbox too)
+    if gameState ~= "playing" and endTimer > 0 then
+        local alpha = endTimer / 1.5
+        if gameState == "win" then
+            love.graphics.setColor(1, 0.95, 0.7, alpha * 0.35)
+            love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+        elseif gameState == "dead" then
+            love.graphics.setColor(0.8, 0.05, 0.05, alpha)
+            love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+        end
+    end
+
     love.graphics.push()
     love.graphics.translate(ox, oy)
     love.graphics.scale(scale, scale)
@@ -348,17 +361,6 @@ function drawUI()
         love.graphics.rectangle("fill", barX, barY, barW * pct, barH)
         love.graphics.setColor(1, 1, 1)
         love.graphics.rectangle("line", barX, barY, barW, barH)
-    end
-
-    -- Screen flash on death/win (fades over the pause)
-    if gameState ~= "playing" and endTimer > 0 then
-        local alpha = endTimer / 1.5
-        if gameState == "win" then
-            love.graphics.setColor(1, 0.95, 0.7, alpha * 0.35)
-        else
-            love.graphics.setColor(0.8, 0.1, 0.1, alpha * 0.5)
-        end
-        love.graphics.rectangle("fill", 0, 0, SCREEN_W, SCREEN_H)
     end
 
     -- End state text
