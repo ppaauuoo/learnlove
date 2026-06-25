@@ -34,6 +34,8 @@ function Player:new(world, x, y)
     self.attackSprites = Sprite.load("assets/helmet/helmet_attack_", 5, 0)
     self.animFrame = 0
     self.animTimer = 0
+    self.noHeadSprites = Sprite.load("assets/helmet/helmet_nohead_", 5, 0)
+    self.noHeadAttackSprites = Sprite.load("assets/helmet/helmet_nohead_attack_", 5, 0)
 
     self.attackEffect = love.graphics.newImage("assets/helmet/Attack.png")
     self.attackEffect:setFilter("nearest", "nearest")
@@ -215,8 +217,14 @@ function Player:draw()
     end
 
     -- Pick sprite set: attack when attacking, walk otherwise
-    local sprites = (self.attackTimer > 0 or self.state == "attack") and self.attackSprites or self.walkSprites
-    Sprite.draw(sprites[self.animFrame], self.x, self.y, self.w, self.h, self.facing)
+    if self.head then
+        -- No-head sprites when head is detached
+        local sprites = (self.attackTimer > 0 or self.state == "attack") and self.noHeadAttackSprites or self.noHeadSprites
+        Sprite.draw(sprites[self.animFrame], self.x, self.y, self.w, self.h, self.facing)
+    else
+        local sprites = (self.attackTimer > 0 or self.state == "attack") and self.attackSprites or self.walkSprites
+        Sprite.draw(sprites[self.animFrame], self.x, self.y, self.w, self.h, self.facing)
+    end
 
     -- Attack effect sprite
     if self.attackTimer > 0 then

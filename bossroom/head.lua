@@ -1,8 +1,11 @@
 -- head.lua: Detachable head that bounces off walls, ground, and the boss
 local Combat = require("combat")
 local Particles = require("components.particles")
+local Sprite = require("components.sprite")
 
 local Head = {}
+local headImage = love.graphics.newImage("assets/helmet/Helmet.png")
+headImage:setFilter("nearest", "nearest")
 
 function Head.spawn(player)
     local h = {
@@ -111,22 +114,13 @@ function Head.kick(h, dir, charged)
 end
 
 function Head.draw(h)
-    if not h.invincible then
-        -- Flicker when destructible
-        if math.floor(love.timer.getTime() * 12) % 3 == 0 then
-            love.graphics.setColor(1, 0.85, 0.65, 0.6)
-        else
-            love.graphics.setColor(1, 0.85, 0.65)
-        end
-    else
-        love.graphics.setColor(1, 0.85, 0.65)
+    love.graphics.setColor(1, 1, 1)
+    if h.invincible then
+        love.graphics.setColor(1, 1, 1)
+    elseif math.floor(love.timer.getTime() * 12) % 3 == 0 then
+        love.graphics.setColor(1, 1, 1, 0.6)
     end
-    love.graphics.circle("fill", h.x + h.w / 2, h.y + h.h / 2, h.w / 2)
-    love.graphics.setColor(0.15, 0.12, 0.1)
-    love.graphics.circle("line", h.x + h.w / 2, h.y + h.h / 2, h.w / 2)
-    -- tiny face
-    love.graphics.circle("fill", h.x + h.w / 2 - 4, h.y + h.h / 2 - 2, 2)
-    love.graphics.circle("fill", h.x + h.w / 2 + 4, h.y + h.h / 2 - 2, 2)
+    Sprite.draw(headImage, h.x, h.y, h.w, h.h, 1)
 end
 
 function Head.remove(h)

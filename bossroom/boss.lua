@@ -11,7 +11,7 @@ local Sprite = require("components.sprite")
 -- frame 1-2: prepare/charge/pre-attack
 -- frame 3: airborne (legs up)
 local function loadSprites()
-    return Sprite.load("assets/boss/boss_frame_", 4, 0)
+    return Sprite.load("assets/boss/bossv2_", 4, 0)
 end
 
 local Boss = Object:extend()
