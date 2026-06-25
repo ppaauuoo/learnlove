@@ -151,9 +151,6 @@ function love.update(dt)
                 horrorFade = 1.5
                 SFX.lowTempo:stop()
                 SFX.highTempo:play()
-                -- Slow pan to center of boss room (keeps camera under transition
-                -- control so smooth follow can't fight it before entrance zooms in)
-                Camera.startTransition(room.x + room.w / 2 - SCREEN_W / 2, room.y + room.h / 2 - SCREEN_H / 2, 10)
             end
         end
 
