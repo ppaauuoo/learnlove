@@ -27,6 +27,7 @@ function Boss:new(world, x, y)
     self.stateTimer = 1.0
     self.attackType = nil
     self.attackHitbox = nil
+    self.attackWeights = {}
 
     self.hitsTaken = 0
     self.staggerThreshold = 12
@@ -248,12 +249,41 @@ function Boss:enterState(state)
 end
 
 function Boss:pickAttack(player)
-    local attacks = { "slam", "dash" }
-    if self.phase >= 2 then table.insert(attacks, "shockwave") end
-    if self.phase >= 3 then table.insert(attacks, "leap") end
+    -- Build pool: remove slam from phase 3, unlock rest by phase
+    local available = { "dash" }
+    if self.phase < 3 then table.insert(available, "slam") end
+    if self.phase >= 2 then table.insert(available, "shockwave") end
+    if self.phase >= 3 then table.insert(available, "leap") end
 
+    -- Init weights for any new attacks
+    for _, name in ipairs(available) do
+        self.attackWeights[name] = self.attackWeights[name] or 1
+    end
+
+    -- Weighted random pick (higher weight = more likely)
+    local total = 0
+    for _, name in ipairs(available) do
+        total = total + math.max(0.3, self.attackWeights[name])
+    end
+    local pick = math.random() * total
+    self.attackType = available[#available]
+    for _, name in ipairs(available) do
+        pick = pick - math.max(0.3, self.attackWeights[name])
+        if pick <= 0 then self.attackType = name; break end
+    end
+
+    -- Decay used attack, recover others
+    for _, name in ipairs(available) do
+        if name == self.attackType then
+            self.attackWeights[name] = math.max(0.3, self.attackWeights[name] - 0.2)
+        else
+            self.attackWeights[name] = math.min(1, self.attackWeights[name] + 0.1)
+        end
+    end
+
+    local chosenType = self.attackType
     self:enterState("telegraph")
-    self.attackType = attacks[math.random(#attacks)]
+    self.attackType = chosenType
 end
 
 function Boss:beginAttack(player)
