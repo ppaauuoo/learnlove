@@ -22,16 +22,16 @@ Rooms.list = {
     boss = {
         x = 1600,
         y = 0,
-        w = 960,
+        w = 1440,
         h = 720,
         walls = {
-            { x = 1600, y = 680, w = 960, h = 40 }, -- floor
-            { x = 1600, y = 0,   w = 960, h = 20 }, -- ceiling
-            { x = 2540, y = 0,   w = 20,   h = 720 }, -- right wall
+            { x = 1600, y = 680, w = 1440, h = 40 }, -- floor
+            { x = 1600, y = 0,   w = 1440, h = 20 }, -- ceiling
+            { x = 3020, y = 0,   w = 20,   h = 720 }, -- right wall
             -- no left wall (connects to hallway)
         },
         playerSpawn = { x = 1700, y = 600 },
-        bossSpawn = { x = 1950, y = 480 },
+        bossSpawn = { x = 2680, y = 480 },
         bossRoom = true,
     },
 }

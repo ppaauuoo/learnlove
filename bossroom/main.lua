@@ -2,7 +2,9 @@
 require("deps.lick")
 local bump = require("deps.bump")
 local Combat = require("combat")
-local Entities = require("entities")
+local Player = require("player")
+local Boss = require("boss")
+local Head = require("head")
 local Particles = require("components.particles")
 local Camera = require("components.camera")
 local Rooms = require("rooms")
@@ -13,6 +15,8 @@ local gameState = "playing" -- playing/win/dead
 local endTimer = 0
 local currentRoom = "hallway"
 local bossActive = false
+local kickCharge = 0
+local kickCharging = false
 
 local SCREEN_W, SCREEN_H = 800, 720  -- virtual resolution, scales to any window
 
@@ -26,7 +30,7 @@ function love.load()
 
     -- Spawn player in hallway
     local spawn = Rooms.list.hallway.playerSpawn
-    player = Entities.Player(world, spawn.x, spawn.y)
+    player = Player(world, spawn.x, spawn.y)
 
     -- Stop all previous sounds if restarting
     if SFX then
@@ -63,7 +67,7 @@ function love.load()
 
     -- Spawn boss in boss room (inactive until player enters)
     local bossSpawn = Rooms.list.boss.bossSpawn
-    boss = Entities.Boss(world, bossSpawn.x, bossSpawn.y)
+    boss = Boss(world, bossSpawn.x, bossSpawn.y)
     bossActive = false
 
     -- Reset state
@@ -71,12 +75,17 @@ function love.load()
     Combat.shakeTimer = 0
     Combat.shakeX = 0
     Combat.shakeY = 0
+    Combat.slowShakeTimer = 0
+    Combat.slowShakeIntensity = 0
+    Combat._kickZoomActive = nil
     Particles.reset()
     Rooms.door.sealed = false
     gameState = "playing"
     endTimer = 0
     debugMode = false
     currentRoom = "hallway"
+    kickCharge = 0
+    kickCharging = false
 
     -- Camera starts on player
     Camera.reset()
@@ -88,6 +97,11 @@ end
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
+    -- Camera always updates (transitions need to animate during freeze)
+    if player then
+        Camera.update(dt, player.x + player.w / 2, player.y + player.h / 2, SCREEN_W, SCREEN_H)
+    end
+
     -- Hitstop freeze
     if Combat.freezeTimer > 0 then
         Combat.freezeTimer = Combat.freezeTimer - dt
@@ -95,28 +109,63 @@ function love.update(dt)
         return
     end
 
+    -- Restore camera zoom after kick freeze ends
+    if Combat._kickZoomActive then
+        local targetZoom = currentRoom == "boss" and 1 or 1.25
+        Camera.startTransition(Camera.x, Camera.y, 0.2, targetZoom)
+        Combat._kickZoomActive = nil
+    end
+
+    -- Charge timer: short delay before deciding hold vs tap
+    if kickCharging then
+        kickCharge = kickCharge + dt
+        if kickCharge >= 0.08 then
+            kickCharging = false
+            if love.keyboard.isDown("h") and player.head then
+                Combat._kickZoomActive = true
+                local px = player.x + player.w / 2
+                local py = player.y + player.h / 2
+                Camera.startTransition(px - 400, py - 360, 0.3, 2)
+                Head.kick(player.head, player.facing, true)
+                player.kickCooldown = 1.5
+            end
+        end
+    end
+
     if gameState == "playing" then
         -- Check room transitions
         local roomName, room = Rooms.getRoomAt(player.x + player.w / 2, player.y + player.h / 2)
 
         if roomName ~= currentRoom then
+            -- Reattach head on room change
+            if player.head then
+                Head.remove(player.head)
+                player.head = nil
+            end
             currentRoom = roomName
             Camera.setBounds(room)
             Camera.zoom = roomName == "boss" and 1 or 1.25
 
-            -- Entering boss room: activate boss, seal door
-            if roomName == "boss" and not bossActive then
+            -- Fade out horror scream, switch BGM on entering boss room
+            if roomName == "boss" then
+                horrorFade = 1.5
+                SFX.lowTempo:stop()
+                SFX.highTempo:play()
+            end
+        end
+
+        -- Boss entrance triggers when player walks 25% into the room
+        if roomName == "boss" and not bossActive then
+            local triggerX = 1600 + 1440 * 0.25
+            if player.x + player.w / 2 >= triggerX then
                 bossActive = true
+                boss:startEntrance()
                 Rooms.sealDoor(world)
                 -- Push player right of the door so bump doesn't shove them back
                 if player.x + player.w > Rooms.door.x and player.x < Rooms.door.x + Rooms.door.w then
                     player.x = Rooms.door.x + Rooms.door.w
                     world:update(player.item, player.x, player.y)
                 end
-                -- Fade out horror scream, switch BGM
-                horrorFade = 1.5
-                SFX.lowTempo:stop()
-                SFX.highTempo:play()
             end
         end
 
@@ -124,8 +173,31 @@ function love.update(dt)
         if bossActive then
             player:update(dt, boss)
             boss:update(dt, player)
+            -- Boss entrance camera signals
+            if boss._requestZoom then
+                boss._requestZoom = nil
+                local bcx = boss.x + boss.w / 2
+                local bcy = boss.y + boss.h / 2
+                Camera.startTransition(bcx - SCREEN_W / 2, bcy - SCREEN_H / 2, 0.5, 1.5)
+            end
+            if boss._requestSnap then
+                boss._requestSnap = nil
+                Camera.transition.active = false
+                Camera.transition.toZoom = nil
+                Camera.zoom = 1
+                local px = player.x + player.w / 2 - SCREEN_W / 2
+                local py = player.y + player.h / 2 - SCREEN_H / 2
+                Camera.x = px
+                Camera.y = py
+            end
         else
             player:update(dt, nil)
+        end
+
+        -- Detached head
+        if player.head then
+            Head.update(player.head, dt, boss)
+            if player.head.dead then player.head = nil end
         end
 
         -- Win/lose check
@@ -150,9 +222,6 @@ function love.update(dt)
         horrorFade = horrorFade - dt
         SFX.horrorScream:setVolume(0.02 * math.max(0, horrorFade / 1.5))
     end
-
-    -- Camera follows player center
-    Camera.update(dt, player.x + player.w / 2, player.y + player.h / 2, SCREEN_W, SCREEN_H)
 
     Combat.updateParticles(dt)
     Combat.updateShake(dt)
@@ -185,6 +254,9 @@ function love.draw()
             "JUMP:  Up / W / Space",
             "ATTACK:  X / J / Left Click",
             "DASH:  C / K / Right Click",
+            "REATTACH/DETACH HEAD:  N",
+            "LIGHT KICK: Tap H",
+            "CHARGE KICK: Hold H",
         }
         for i, line in ipairs(lines) do
             -- Glow layers
@@ -227,6 +299,9 @@ function love.draw()
         boss:draw()
     end
     player:draw()
+    if player.head then
+        Head.draw(player.head)
+    end
 
     -- Particles
     Combat.drawParticles()
@@ -250,6 +325,19 @@ function drawUI()
     )
     local ox = (love.graphics.getWidth() - SCREEN_W * scale) / 2
     local oy = (love.graphics.getHeight() - SCREEN_H * scale) / 2
+
+    -- Screen flash on death/win (raw screen coords, covers letterbox too)
+    if gameState ~= "playing" and endTimer > 0 then
+        local alpha = endTimer / 1.5
+        if gameState == "win" then
+            love.graphics.setColor(1, 0.95, 0.7, alpha * 0.35)
+            love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+        elseif gameState == "dead" then
+            love.graphics.setColor(0.8, 0.05, 0.05, alpha)
+            love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+        end
+    end
+
     love.graphics.push()
     love.graphics.translate(ox, oy)
     love.graphics.scale(scale, scale)
@@ -361,6 +449,26 @@ function love.keypressed(key)
     end
     if key == "c" or key == "k" then
         player:dash()
+    end
+    if key == "n" then
+        player:toggleHead()
+    end
+    if key == "h" then
+        if player.head and player.kickCooldown <= 0 and Head.canKick(player.head, player, 80) then
+            kickCharging = true
+            kickCharge = 0
+        end
+    end
+end
+
+function love.keyreleased(key)
+    if key == "h" and kickCharging then
+        kickCharging = false
+        -- Released before next frame: quick tap, normal kick
+        if player and player.head and player.kickCooldown <= 0 then
+            Head.kick(player.head, player.facing, false)
+            player.kickCooldown = 1.5
+        end
     end
 end
 
