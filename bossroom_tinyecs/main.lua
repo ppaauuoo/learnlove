@@ -2,11 +2,9 @@
 -- Entities are plain tables, systems filter by field presence
 require("deps.lick")
 local tiny = require("deps.tiny")
-local bump = require("deps.bump")
 local Combat = require("combat")
 local Entities = require("entities")
 local Rooms = require("rooms")
-local Sprite = require("sprite")
 
 -- Systems
 local gravitySystem    = require("systems.gravity")
@@ -16,11 +14,13 @@ local healthSystem     = require("systems.health")
 local playerInputSystem = require("systems.player_input")
 local bossAISystem     = require("systems.boss_ai")
 local combatSystem     = require("systems.combat")
-local Draw              = require("systems.draw")
+local Draw             = require("systems.draw")
+local InputSystem      = require("systems.input")
 
 -- Game state
 local ecsWorld
-local player, boss
+local player, boss1, boss2
+local bosses = {}
 local bumpWorld
 local debugMode = false
 local gameState = "playing"
@@ -100,13 +100,14 @@ function love.load()
 
     -- Spawn entities
     player = Entities.makePlayer(bumpWorld, Rooms.list.hallway.playerSpawn.x, Rooms.list.hallway.playerSpawn.y)
-    boss = Entities.makeBoss(bumpWorld, Rooms.list.boss.bossSpawn.x, Rooms.list.boss.bossSpawn.y)
+    boss1 = Entities.makeBoss(bumpWorld, Rooms.list.boss.bossSpawn.x, Rooms.list.boss.bossSpawn.y)
+    boss2 = Entities.makeBoss(bumpWorld, Rooms.list.boss.bossSpawn.x + 200, Rooms.list.boss.bossSpawn.y)
+    bosses = { boss1, boss2 }
 
     -- Wire system references
+    inputSystem.player = player
     bossAISystem.player = player
     bossAISystem.active = false
-    combatSystem.player = player
-    combatSystem.boss = boss
     combatSystem.active = false
 
     -- Create tiny-ecs world with systems in execution order
@@ -117,11 +118,12 @@ function love.load()
         bossAISystem,
         gravitySystem,
         movementSystem,
-        combatSystem
+        combatSystem,
+        inputSystem
     )
 
     -- Add entities
-    ecsWorld:add(player, boss)
+    ecsWorld:add(player, boss1, boss2)
 
     -- Sound
     if SFX then
@@ -208,11 +210,19 @@ function love.update(dt)
         -- Run all ECS systems
         ecsWorld:update(dt)
 
-        -- Win/lose check
-        if bossActive and boss.hp <= 0 then
+        -- Win/lose check (all bosses must be dead)
+        local allDead = bossActive
+        if bossActive then
+            for _, b in ipairs(bosses) do
+                if b.hp > 0 then allDead = false; break end
+            end
+        end
+        if allDead then
             gameState = "win"
             endTimer = 1.5
-            Combat.spawnParticles(boss.x + boss.w / 2, boss.y + boss.h / 2, 20)
+            for _, b in ipairs(bosses) do
+                Combat.spawnParticles(b.x + b.w / 2, b.y + b.h / 2, 20)
+            end
             Rooms.unsealDoor(bumpWorld)
         elseif player.hp <= 0 then
             gameState = "dead"
@@ -290,12 +300,9 @@ function love.draw()
         love.graphics.rectangle("fill", Rooms.door.x, Rooms.door.y, Rooms.door.w, Rooms.door.h)
     end
 
-    -- Draw entities via draw system (called during world:update in update phase)
-    -- Actually, tiny-ecs calls process during update. We need to draw here instead.
-    -- We'll manually invoke the draw system
     love.graphics.setColor(1, 1, 1)
     if bossActive then
-        Draw:drawBoss(boss)
+        for _, b in ipairs(bosses) do Draw:drawBoss(b) end
     end
     Draw:drawPlayer(player)
 
@@ -312,16 +319,18 @@ function love.draw()
             love.graphics.rectangle("line", player.x + ox, player.y + (player.h - 36) / 2, 48, 36)
         end
         if bossActive then
-            love.graphics.setColor(1, 0, 0, 0.4)
-            love.graphics.rectangle("line", boss.x, boss.y, boss.w, boss.h)
-            if boss.attackHitbox then
-                love.graphics.setColor(1, 0.5, 0, 0.6)
-                local hb = boss.attackHitbox
-                love.graphics.rectangle("line", hb.x, hb.y, hb.w, hb.h)
+            for _, b in ipairs(bosses) do
+                love.graphics.setColor(1, 0, 0, 0.4)
+                love.graphics.rectangle("line", b.x, b.y, b.w, b.h)
+                if b.attackHitbox then
+                    love.graphics.setColor(1, 0.5, 0, 0.6)
+                    local hb = b.attackHitbox
+                    love.graphics.rectangle("line", hb.x, hb.y, hb.w, hb.h)
+                end
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.print("B: " .. b.bossState .. (b.attackType and (" [" .. b.attackType .. "]") or ""), b.x, b.y - 28)
+                love.graphics.print("Phase: " .. b.phase .. "  Hits: " .. b.hitsTaken, b.x, b.y - 14)
             end
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.print("B: " .. boss.bossState .. (boss.attackType and (" [" .. boss.attackType .. "]") or ""), boss.x, boss.y - 28)
-            love.graphics.print("Phase: " .. boss.phase .. "  Hits: " .. boss.hitsTaken, boss.x, boss.y - 14)
         end
         love.graphics.setColor(1, 1, 1)
         love.graphics.print("P: " .. player.state, player.x, player.y - 14)
@@ -349,16 +358,21 @@ function love.draw()
         love.graphics.circle("fill", 30 + (i - 1) * 22, 40, 8)
     end
 
-    -- Boss HP bar
-    if bossActive and boss.hp > 0 then
+    -- Boss HP bars (stacked)
+    if bossActive then
         local barW, barH = 400, 12
         local barX = (SCREEN_W - barW) / 2
-        love.graphics.setColor(0.2, 0.2, 0.2)
-        love.graphics.rectangle("fill", barX, 20, barW, barH)
-        love.graphics.setColor(0.9, 0.1, 0.1)
-        love.graphics.rectangle("fill", barX, 20, barW * (boss.hp / boss.maxHp), barH)
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("line", barX, 20, barW, barH)
+        for i, b in ipairs(bosses) do
+            if b.hp > 0 then
+                local barY = 8 + (i - 1) * (barH + 4)
+                love.graphics.setColor(0.2, 0.2, 0.2)
+                love.graphics.rectangle("fill", barX, barY, barW, barH)
+                love.graphics.setColor(0.9, 0.1, 0.1)
+                love.graphics.rectangle("fill", barX, barY, barW * (b.hp / b.maxHp), barH)
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.rectangle("line", barX, barY, barW, barH)
+            end
+        end
     end
 
     -- End state
