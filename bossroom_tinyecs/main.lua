@@ -15,7 +15,6 @@ local playerInputSystem = require("systems.player_input")
 local bossAISystem     = require("systems.boss_ai")
 local combatSystem     = require("systems.combat")
 local Draw             = require("systems.draw")
-local InputSystem      = require("systems.input")
 
 -- Game state
 local ecsWorld
@@ -105,7 +104,6 @@ function love.load()
     bosses = { boss1, boss2 }
 
     -- Wire system references
-    inputSystem.player = player
     bossAISystem.player = player
     bossAISystem.active = false
     combatSystem.active = false
@@ -118,8 +116,7 @@ function love.load()
         bossAISystem,
         gravitySystem,
         movementSystem,
-        combatSystem,
-        inputSystem
+        combatSystem
     )
 
     -- Add entities

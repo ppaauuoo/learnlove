@@ -59,7 +59,6 @@ function Entities.makeBoss(bumpWorld, x, y)
         knockback = { vx = 0, vy = 0, timer = 0 },
         -- Boss-specific (presence of this field = is a boss)
         isBoss = true,
-        isPlayer = false,
         phase = 1,
         bossState = "idle",
         stateTimer = 1.0,
