@@ -75,6 +75,11 @@ function EditMode:update()
     return
   end
 
+  if activeTool == "delBtn" and love.mouse.isDown(1) then
+    local x,y = love.mouse.getPosition()
+    blob_system:destroyStaticBlob(x,y)
+  end
+
   for _,btn in ipairs(button) do
     btn.func()
   end
@@ -128,7 +133,7 @@ function EditMode:mousepressed(x, y, click)
   end
 
   if activeTool == "delBtn" then
-    blob_system:destroyStaticBlob(x,y)
+    -- move to update() for drag and del
   end
 
 end
