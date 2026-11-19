@@ -1,10 +1,10 @@
-Object = require "classic"
+Object = require "deps.classic"
 
-local push = require 'push'
-local lurker = require 'lurker'
-local RigidBlobSystem = require "RigidBlobSystem"
-local Mouse = require 'Mouse'
-local EditMode= require 'EditMode'
+local push = require 'deps.push'
+local lurker = require 'deps.lurker'
+local RigidBlobSystem = require "systems.RigidBlobSystem"
+local Mouse = require 'systems.Mouse'
+local EditMode= require 'systems.EditMode'
 
 GAME_WIDTH, GAME_HEIGHT = 432, 243
 
@@ -21,8 +21,8 @@ end
 
 function love.load()
     -- init font
-    smallFont = love.graphics.newFont('font.ttf', 8)
-    mediumFont = love.graphics.newFont('font.ttf', 16)
+    smallFont = love.graphics.newFont('assets/font.ttf', 8)
+    mediumFont = love.graphics.newFont('assets/font.ttf', 16)
     love.graphics.setFont(smallFont)
 
     -- init windows
