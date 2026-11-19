@@ -4,14 +4,17 @@ local push = require 'push'
 local lurker = require 'lurker'
 local RigidBlobSystem = require "RigidBlobSystem"
 local Mouse = require 'Mouse'
+local EditMode= require 'EditMode'
 
 GAME_WIDTH, GAME_HEIGHT = 432, 243
-local windowWidth, windowHeight = love.window.getDesktopDimensions()
-local smallFont = love.graphics.newFont('font.ttf', 8)
+windowWidth, windowHeight = love.window.getDesktopDimensions()
+smallFont = love.graphics.newFont('font.ttf', 8)
+mediumFont = love.graphics.newFont('font.ttf', 16)
 
 function init()
   blob_system = RigidBlobSystem(15000)
   cursor = Mouse()
+  edit_mode = EditMode()
 end
 
 -- autoreload
@@ -38,27 +41,34 @@ end
 function love.update(dt)
   lurker.update()
 
-  cursor:update(dt)
 
+  edit_mode:update(dt)
   blob_system:update(dt)
+  cursor:update(dt)
 
 end
 
 function love.draw()
-  cursor:draw()
 
   blob_system:draw()
+  edit_mode:draw()
+  cursor:draw()
 
   push:start()
 
-  love.graphics.printf('test',0, 35,GAME_WIDTH/2,'center')
 
   push:finish()
 
 end
 
+function love.keypressed(key)
+  edit_mode:keypressed(key)
+
+end
+
 function love.mousepressed(x, y, button)
   blob_system:mousepressed(x,y,button)
+  edit_mode:mousepressed(x,y,button)
 
 end
 

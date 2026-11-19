@@ -2,14 +2,13 @@ local loveblobs = require "loveblobs"
 local RigidBlobSystem = Object:extend()
 
 local world
-local softbodies = {}
-
 
 local dragJoint
 local dragForce
 
 local function createStaticBlob(x, y, size)
     --init softblob
+    softbodies = {}
     local b = loveblobs.softbody(world, x, y, size, 2, 4)
     b:setFrequency(1.5)
     b:setDamping(0.1)
