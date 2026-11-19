@@ -1,53 +1,22 @@
+Object = require "classic"
+
 local push = require 'push'
 local lurker = require 'lurker'
-local loveblobs = require "loveblobs"
+local RigidBlobSystem = require "RigidBlobSystem"
+local Mouse = require 'Mouse'
 
 GAME_WIDTH, GAME_HEIGHT = 432, 243
 local windowWidth, windowHeight = love.window.getDesktopDimensions()
 local smallFont = love.graphics.newFont('font.ttf', 8)
 
-local world
-local softbodies = {}
-
-local mouseState
-
-function initPhysics()
-    --init world
-    love.physics.setMeter(16)
-    world  = love.physics.newWorld(0, 0, true)
-    mouseWorld  = love.physics.newWorld(0, 0, true)
-
-    --init softblob
-    local b = loveblobs.softbody(world, 40, 30, 10, 2, 4)
-    b:setFrequency(1)
-    b:setDamping(0.1)
-    b:setFriction(1)
-    table.insert(softbodies, b)
-
-end
-
-function initMouse()
-    --init body and shape
-    body = love.physics.newBody(mouseWorld,love.mouse.getX(), love.mouse.getY(), "dynamic")
-    shape = love.physics.newCircleShape(5)
-    -- attach shape to body
-    fixture = love.physics.newFixture(body,shape)
-    -- joint body with mouse
-    joint = love.physics.newMouseJoint(body, love.mouse.getPosition())
+function init()
+  blob_system = RigidBlobSystem(15000)
+  cursor = Mouse()
 end
 
 -- autoreload
 lurker.postswap = function(f)
-  initPhysics()
-  initMouse()
-end
-
-
-function love.mousepressed(x,y,btn)
-  -- if btn == "1" then
-  -- end
-  fixture:testPoint(x,y)
-  mouseJoint = love.physics.newMouseJoint(body, x, y)
+  init()
 end
 
 function love.load()
@@ -61,44 +30,40 @@ function love.load()
     -- init resolution
     push:setupScreen(GAME_WIDTH,GAME_HEIGHT,windowWidth,windowHeight, {upscale = 'normal'})
 
-    --init physics world
-    initPhysics()
-    initMouse()
+    --init system
+    init()
 
 end
 
 function love.update(dt)
   lurker.update()
 
-  :setTarget(love.mouse.getPosition())
-  for i=1,4 do
-    world:update(dt)
-  end
+  cursor:update(dt)
 
-  for i,v in ipairs(softbodies) do
-    v:update(dt)
-  end
+  blob_system:update(dt)
 
 end
 
 function love.draw()
-  --render mouse
-  love.graphics.circle("fill",body:getX(),body:getY(),shape:getRadius())
+  cursor:draw()
 
-  -- render softbodies
-  for i,v in ipairs(softbodies) do
-    love.graphics.setColor(50*i, 100, 200*i)
-    if (tostring(v) == "softbody") then
-      v:draw("fill",false)
-    else
-      v:draw(false)
-    end
-  end
+  blob_system:draw()
 
   push:start()
 
   love.graphics.printf('test',0, 35,GAME_WIDTH/2,'center')
 
   push:finish()
+
+end
+
+function love.mousepressed(x, y, button)
+  blob_system:mousepressed(x,y,button)
+
+end
+
+function love.mousereleased(x, y, button)
+  blob_system:mousereleased(x,y,button)
+
 end
 
