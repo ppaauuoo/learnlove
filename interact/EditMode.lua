@@ -1,7 +1,5 @@
 local EditMode = Object:extend()
 
-local RigidBlobSystem require "RigidBlobSystem"
-
 local editMode = false
 
 local button = {}
@@ -15,7 +13,12 @@ local colors = {
     white = {1, 1, 1}
 }
 
-function addObject()
+local function pointInRect(px, py, rx, ry, rw, rh)
+    return px >= rx and px <= rx + rw and
+           py >= ry and py <= ry + rh
+end
+
+local function addObject()
   for _,btn in ipairs(button) do
     local selected = activeTool == btn.name
     if btn.name=="addBtn" and selected then
@@ -28,7 +31,7 @@ function addObject()
   end
 end
 
-function delObject()
+local function delObject()
   for _,btn in ipairs(button) do
     local selected = activeTool == btn.name
     if btn.name == "delBtn" and selected then
@@ -42,32 +45,30 @@ function delObject()
 end
 
 function EditMode:new()
-  local addBtn = {
-    name = "addBtn",
-    x = 100,
-    y = 100,
-    w = 100,
-    h = 50,
-    text = "Add",
-    textSize = 3,
-    color = colors.blue,
-    func = addObject,
+  button = {
+    {
+      name = "addBtn",
+      x = 100,
+      y = 100,
+      w = 100,
+      h = 50,
+      text = "Add",
+      textSize = 3,
+      color = colors.blue,
+      func = addObject,
+    },
+    {
+      name = "delBtn",
+      x = 260,
+      y = 100,
+      w = 100,
+      h = 50,
+      text = "Del",
+      textSize = 3,
+      color = colors.blue,
+      func = delObject,
+    }
   }
-  table.insert(button, addBtn)
-
-
-  local delBtn = {
-    name = "delBtn",
-    x = 260,
-    y = 100,
-    w = 100,
-    h = 50,
-    text = "Del",
-    textSize = 3,
-    color = colors.blue,
-    func = delObject,
-  }
-  table.insert(button, delBtn)
 end
 
 function EditMode:update()
@@ -105,11 +106,6 @@ function EditMode:keypressed(key)
     editMode = not editMode
     love.window.setTitle(editMode and "Edit Mode" or "")
   end
-end
-
-local function pointInRect(px, py, rx, ry, rw, rh)
-    return px >= rx and px <= rx + rw and
-           py >= ry and py <= ry + rh
 end
 
 function EditMode:mousepressed(x, y, click)

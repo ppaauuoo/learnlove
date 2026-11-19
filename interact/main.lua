@@ -41,7 +41,6 @@ end
 function love.update(dt)
   lurker.update()
 
-
   edit_mode:update(dt)
   blob_system:update(dt)
   cursor:update(dt)

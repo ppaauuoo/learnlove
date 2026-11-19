@@ -2,11 +2,9 @@ local loveblobs = require "loveblobs"
 local RigidBlobSystem = Object:extend()
 
 local world
-
 local dragJoint
 local dragForce
 local softbodies
-
 
 local function pointInPolygon(x, y, points)
   local inside = false
@@ -29,7 +27,6 @@ local function pointInPolygon(x, y, points)
 
   return inside
 end
-
 
 
 
