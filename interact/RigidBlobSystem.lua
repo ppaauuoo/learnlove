@@ -7,20 +7,64 @@ local dragJoint
 local dragForce
 local softbodies
 
+
+local function pointInPolygon(x, y, points)
+  local inside = false
+  local j = #points - 1
+
+  for i = 1, #points, 2 do
+    local xi, yi = points[i], points[i + 1]
+    local xj, yj = points[j], points[j + 1]
+
+    if (yi > y) ~= (yj > y) then
+      local crossingX = xi + (y - yi) * (xj - xi) / (yj - yi)
+
+      if x < crossingX then
+        inside = not inside
+      end
+    end
+
+    j = i
+  end
+
+  return inside
+end
+
+
+
+
+function RigidBlobSystem:destroyStaticBlob(x,y)
+  -- ipair cant reverse loop -> use numeric loop
+  for i = #softbodies,1 ,-1 do
+    local blob = softbodies[i]
+      if pointInPolygon(x, y, blob:getPoints()) then
+        if dragJoint then
+          dragJoint:destroy()
+          dragJoint = nil
+        end
+        blob:destroy()
+        blob.anchorBody:destroy()
+        table.remove(softbodies, i)
+      end
+  end
+
+end
+
 function RigidBlobSystem:createStaticBlob(x, y, size)
     --init softblob
     local b = loveblobs.softbody(world, x, y, size, 2, 4)
+
     b:setFrequency(1.5)
     b:setDamping(0.1)
     b:setFriction(1)
     table.insert(softbodies, b)
 
     --init anchor
-    local blobX, blobY = b.centerBody:getPosition()
     local anchorBody = love.physics.newBody( world, x, y, "static")
-    local anchorJoint = love.physics.newDistanceJoint(anchorBody , b.centerBody, x, y, blobX, blobY, false)
+    local anchorJoint = love.physics.newDistanceJoint(anchorBody , b.centerBody, x, y, x, y, false)
     anchorJoint:setFrequency(1.2)
     anchorJoint:setDampingRatio(0.7)
+    b.anchorBody = anchorBody
 end
 
 function RigidBlobSystem:new(force)
@@ -60,29 +104,6 @@ function RigidBlobSystem:draw()
       v:draw(false)
     end
   end
-end
-
-
-local function pointInPolygon(x, y, points)
-  local inside = false
-  local j = #points - 1
-
-  for i = 1, #points, 2 do
-    local xi, yi = points[i], points[i + 1]
-    local xj, yj = points[j], points[j + 1]
-
-    if (yi > y) ~= (yj > y) then
-      local crossingX = xi + (y - yi) * (xj - xi) / (yj - yi)
-
-      if x < crossingX then
-        inside = not inside
-      end
-    end
-
-    j = i
-  end
-
-  return inside
 end
 
 

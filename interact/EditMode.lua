@@ -112,7 +112,6 @@ function EditMode:mousepressed(x, y, click)
     return
   end
 
-
   for _,btn in ipairs(button) do
     if pointInRect(x, y, btn.x, btn.y, btn.w, btn.h) then
       if activeTool == btn.name then
@@ -129,7 +128,7 @@ function EditMode:mousepressed(x, y, click)
   end
 
   if activeTool == "delBtn" then
-    blob_system:createStaticBlob(x,y,100)
+    blob_system:destroyStaticBlob(x,y)
   end
 
 end
