@@ -1,11 +1,5 @@
 local EditMode = Object:extend()
 
-local editMode = false
-
-local button = {}
-
-local activeTool = nil
-
 local colors = {
     red   = {1, 0, 0},
     green = {0, 1, 0, 0.8}, -- 80% opacity
@@ -18,9 +12,9 @@ local function pointInRect(px, py, rx, ry, rw, rh)
            py >= ry and py <= ry + rh
 end
 
-local function addObject()
-  for _,btn in ipairs(button) do
-    local selected = activeTool == btn.name
+function EditMode:addObject()
+  for _,btn in ipairs(self.button) do
+    local selected = self.activeTool == btn.name
     if btn.name=="addBtn" and selected then
       btn.text = "[Add]"
       btn.color = colors.red
@@ -31,9 +25,9 @@ local function addObject()
   end
 end
 
-local function delObject()
-  for _,btn in ipairs(button) do
-    local selected = activeTool == btn.name
+function EditMode:delObject()
+  for _,btn in ipairs(self.button) do
+    local selected = self.activeTool == btn.name
     if btn.name == "delBtn" and selected then
       btn.text = "[Del]"
       btn.color = colors.red
@@ -45,7 +39,9 @@ local function delObject()
 end
 
 function EditMode:new()
-  button = {
+  self.editMode = false
+  self.activeTool = nil
+  self.button = {
     {
       name = "addBtn",
       x = 100,
@@ -55,7 +51,7 @@ function EditMode:new()
       text = "Add",
       textSize = 3,
       color = colors.blue,
-      func = addObject,
+      func = self.addObject,
     },
     {
       name = "delBtn",
@@ -66,30 +62,30 @@ function EditMode:new()
       text = "Del",
       textSize = 3,
       color = colors.blue,
-      func = delObject,
+      func = self.delObject,
     }
   }
 end
 
 function EditMode:update()
-  if not editMode then
+  if not self.editMode then
     return
   end
 
-  if activeTool == "delBtn" and love.mouse.isDown(1) then
+  if self.activeTool == "delBtn" and love.mouse.isDown(1) then
     local x,y = love.mouse.getPosition()
     blob_system:destroyStaticBlob(x,y)
   end
 
-  for _,btn in ipairs(button) do
-    btn.func()
+  for _,btn in ipairs(self.button) do
+    btn.func(self)
   end
 
 end
 
 function EditMode:draw()
-  if editMode then
-    for _,btn in ipairs(button) do
+  if self.editMode then
+    for _,btn in ipairs(self.button) do
       local text = love.graphics.newText(mediumFont, btn.text)
       local textWidht = text:getWidth()
 
@@ -103,35 +99,37 @@ end
 
 function EditMode:keypressed(key)
   if key == "e" and love.keyboard.isDown("lctrl") then
-    editMode = not editMode
-    love.window.setTitle(editMode and "Edit Mode" or "")
+    self.editMode = not self.editMode
+    love.window.setTitle(self.editMode and "Edit Mode" or "")
   end
 end
 
 function EditMode:mousepressed(x, y, click)
-  if not editMode or click ~= 1 then
-    return
+  if not self.editMode or click ~= 1 then
+    return false
   end
 
-  for _,btn in ipairs(button) do
+  for _,btn in ipairs(self.button) do
     if pointInRect(x, y, btn.x, btn.y, btn.w, btn.h) then
-      if activeTool == btn.name then
-        activeTool = nil
-        return
+      if self.activeTool == btn.name then
+        self.activeTool = nil
+        return false
       end
-      activeTool = btn.name
-      return
+      self.activeTool = btn.name
+      return true
     end
   end
 
-  if activeTool == "addBtn" then
+  if self.activeTool == "addBtn" then
     blob_system:createStaticBlob(x,y,100)
+    return true
   end
 
-  if activeTool == "delBtn" then
+  -- if self.activeTool == "delBtn" then
     -- move to update() for drag and del
-  end
-
+  -- end
+  -- 
+  return false
 end
 
 return EditMode
