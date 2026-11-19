@@ -5,10 +5,10 @@ local world
 
 local dragJoint
 local dragForce
+local softbodies
 
-local function createStaticBlob(x, y, size)
+function RigidBlobSystem:createStaticBlob(x, y, size)
     --init softblob
-    softbodies = {}
     local b = loveblobs.softbody(world, x, y, size, 2, 4)
     b:setFrequency(1.5)
     b:setDamping(0.1)
@@ -30,8 +30,9 @@ function RigidBlobSystem:new(force)
     --init world
     love.physics.setMeter(16)
     world  = love.physics.newWorld(0, 0, true)
+    softbodies = {}
 
-    createStaticBlob(400,300,100)
+    self:createStaticBlob(400,300,100)
 end
 
 function RigidBlobSystem:update(dt)

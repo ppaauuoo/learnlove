@@ -1,5 +1,7 @@
 local EditMode = Object:extend()
 
+local RigidBlobSystem require "RigidBlobSystem"
+
 local editMode = false
 
 local button = {}
@@ -110,6 +112,7 @@ function EditMode:mousepressed(x, y, click)
     return
   end
 
+
   for _,btn in ipairs(button) do
     if pointInRect(x, y, btn.x, btn.y, btn.w, btn.h) then
       if activeTool == btn.name then
@@ -117,8 +120,18 @@ function EditMode:mousepressed(x, y, click)
         return
       end
       activeTool = btn.name
+      return
     end
   end
+
+  if activeTool == "addBtn" then
+    blob_system:createStaticBlob(x,y,100)
+  end
+
+  if activeTool == "delBtn" then
+    blob_system:createStaticBlob(x,y,100)
+  end
+
 end
 
 return EditMode
