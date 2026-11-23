@@ -44,12 +44,13 @@ local function testMainIntegration()
   package.loaded["systems.RigidBlobSystem"] = system("blob")
   package.loaded["systems.Mouse"] = system("cursor")
   package.loaded["systems.EditMode"] = system("edit")
+  package.loaded["systems.GuageSystem"] = system("guage")
 
   chunk()
   initWindows = function() end
   love.load()
   love.update(0.125)
-  for _, name in ipairs({ "blob", "cursor", "edit" }) do
+  for _, name in ipairs({ "blob", "cursor", "edit", "guage" }) do
     assert(received[name] == 0.125,
       name .. " update expected dt=0.125, got " .. tostring(received[name]))
   end

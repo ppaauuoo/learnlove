@@ -7,6 +7,7 @@ local GameStateManager = require "deps.gamestateManager"
 local RigidBlobSystem = require "systems.RigidBlobSystem"
 local Mouse = require 'systems.Mouse'
 local EditMode= require 'systems.EditMode'
+local GuageSystem= require 'systems.GuageSystem'
 
 GAME_WIDTH, GAME_HEIGHT = 432, 243
 
@@ -15,12 +16,14 @@ local activeState = {
     edit_mode:update(dt)
     blob_system:update(dt)
     cursor:update(dt)
+    guage_system:update(dt)
   end,
 
   draw = function(self)
     blob_system:draw()
     edit_mode:draw()
     cursor:draw()
+    guage_system:draw()
   end,
 
   keypressed = function(self,key)
@@ -60,6 +63,7 @@ function initSys()
   blob_system = RigidBlobSystem(15000)
   cursor = Mouse()
   edit_mode = EditMode()
+  guage_system = GuageSystem()
 end
 
 -- autoreload
