@@ -52,7 +52,7 @@ function RigidBlobSystem:createStaticBlob(x, y, size)
     --init anchor
     local anchorBody = love.physics.newBody( self.world, x, y, "static")
     local anchorJoint = love.physics.newDistanceJoint(anchorBody , b.centerBody, x, y, x, y, false)
-    anchorJoint:setFrequency(1.2)
+    anchorJoint:setFrequency(2.2)
     anchorJoint:setDampingRatio(0.7)
     b.anchorBody = anchorBody
 end
@@ -66,6 +66,7 @@ function RigidBlobSystem:new(force)
     self.world  = love.physics.newWorld(0, 0, true)
     self.softbodies = {}
 
+    --init blob--
     self:createStaticBlob(400,300,100)
 end
 
@@ -74,7 +75,7 @@ function RigidBlobSystem:update(dt)
     self.dragJoint:setTarget(love.mouse.getPosition())
   end
 
-  for i=1,4 do
+  for _=1,4 do
     self.world:update(dt)
   end
 
@@ -108,7 +109,7 @@ function RigidBlobSystem:mousepressed(x,y,button)
   end
 end
 
-function RigidBlobSystem:mousereleased(x,y,button)
+function RigidBlobSystem:mousereleased(_,_,button)
   if button == 1 and self.dragJoint then
     self.dragJoint:destroy()
     self.dragJoint = nil
