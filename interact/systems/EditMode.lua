@@ -1,11 +1,8 @@
 local EditMode = Object:extend()
 
-local colors = {
-    red   = {1, 0, 0},
-    green = {0, 1, 0, 0.8}, -- 80% opacity
-    blue  = {0.2, 0.4, 1},
-    white = {1, 1, 1}
-}
+require 'config'
+
+local colors = Config.colors
 
 local function pointInRect(px, py, rx, ry, rw, rh)
     return px >= rx and px <= rx + rw and
