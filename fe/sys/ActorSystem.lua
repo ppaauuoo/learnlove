@@ -8,7 +8,7 @@ local function getSpawnPoints(map)
   local spawnPoints = {}
     for row = 1, #map do
         for col = 1, #map[row] do
-            local x = (col - 1) * CELLSIZE 
+            local x = (col - 1) * CELLSIZE
             local y = (row - 1) * CELLSIZE
 
             if map[row][col] == 2 then
@@ -21,12 +21,27 @@ local function getSpawnPoints(map)
 end
 
 function ActorSystem:spawnAt(x,y)
-  local actor = {x=x,y=y}
-  if self.maxActors > #self.actors then
-    table.insert(self.actors, actor)
-  else
-    Alerts:addAlert("No Actor Left", 5)
+  if GameStateManager:getState() ~= PrepState then
+    return
   end
+
+  -- kill occupied actor
+  for i = #self.actors, 1, -1 do
+    if self.actors[i].x ==  x and self.actors[i].y == y then
+      table.remove(self.actors,i)
+      return
+    end
+  end
+
+  -- check max actor
+  if #self.actors >= self.maxActors then
+    Alerts:addAlert("No Actor Left", 5)
+    return
+  end
+
+  -- spawn
+  local actor = {x=x,y=y}
+  table.insert(self.actors, actor)
 end
 
 function ActorSystem:new()

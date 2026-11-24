@@ -16,7 +16,7 @@ function TileMapSystem:draw()
             if self.map[row][col] == 1 then
                 love.graphics.setColor(Color.red) -- Red wall
                 love.graphics.rectangle("fill", x, y, CELLSIZE, CELLSIZE)
-            elseif self.map[row][col] == 2 then
+            elseif self.map[row][col] == 2 and GameStateManager:getState() == PrepState then
                 love.graphics.setColor(Color.green) -- Green wall
                 love.graphics.rectangle("fill", x, y, CELLSIZE, CELLSIZE)
             else
