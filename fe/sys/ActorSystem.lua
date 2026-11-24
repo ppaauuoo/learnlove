@@ -2,11 +2,7 @@ local ActorSystem = Object:extend()
 
 require 'config'
 
-local function pointInRect(px, py, rx, ry, rw, rh)
-  px, py = push:toGame(px,py)
-  return px >= rx and px <= rx + rw and
-         py >= ry and py <= ry + rh
-end
+local utils = require 'lib.utils'
 
 local function getSpawnPoints(map)
   local spawnPoints = {}
@@ -55,7 +51,7 @@ function ActorSystem:mousepressed(x,y,key)
   end
 
   for _,v in ipairs(self.spawnPoints) do
-    if pointInRect(x, y, v.x, v.y, CELLSIZE, CELLSIZE) then
+    if utils.pointInRect(x, y, v.x, v.y, CELLSIZE, CELLSIZE) then
       self:spawnAt(v.x,v.y)
     end
   end
