@@ -1,6 +1,7 @@
 local ActorSystem = Object:extend()
 
 require 'config'
+require 'status'
 
 local utils = require 'lib.utils'
 
@@ -39,24 +40,20 @@ function ActorSystem:spawnAt(x,y)
     return
   end
 
-  -- spawn
-  local actor = {x=x,y=y}
-  table.insert(self.actors, actor)
+  UIs:actorMenu(x,y)
 end
 
 function ActorSystem:new()
     self.map = Map.map1
     self.spawnPoints = getSpawnPoints(self.map)
     self.actors = {}
-    self.maxActors = 1
+    self.maxActors = #Character
 end
 
 function ActorSystem:draw()
-  if self.actors then
-    for _,v in ipairs(self.actors) do
-      love.graphics.setColor(Color.blue)
-      love.graphics.rectangle('fill', v.x, v.y, CELLSIZE, CELLSIZE)
-    end
+  for _,v in ipairs(self.actors) do
+    love.graphics.setColor(Color.blue)
+    love.graphics.rectangle('fill', v.x, v.y, CELLSIZE, CELLSIZE)
   end
 end
 
@@ -68,6 +65,12 @@ function ActorSystem:mousepressed(x,y,key)
   for _,v in ipairs(self.spawnPoints) do
     if utils.pointInRect(x, y, v.x, v.y, CELLSIZE, CELLSIZE) then
       self:spawnAt(v.x,v.y)
+    end
+  end
+
+  for _,v in ipairs(self.actors) do
+    if utils.pointInRect(x, y, v.x, v.y, CELLSIZE, CELLSIZE) then
+      Tilemaps:moveTo(v)
     end
   end
 

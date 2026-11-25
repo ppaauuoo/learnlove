@@ -3,6 +3,17 @@ local TileMapSystem = Object:extend()
 require 'map'
 require 'config'
 
+function TileMapSystem:moveTo(actor)
+  local range = actor.character.class.range
+  local pos = {actor.x,actor.y}
+  self.move_range = {
+      range = range,
+      pos = pos
+  }
+
+end
+
+
 function TileMapSystem:new()
     self.map = Map.map1
 end
@@ -23,6 +34,15 @@ function TileMapSystem:draw()
                 love.graphics.setColor(0.2, 0.2, 0.2) -- Dark floor outline
                 love.graphics.rectangle("line", x, y, CELLSIZE, CELLSIZE)
             end
+
+            -- local move_range = self.move_range
+            -- if move_range then
+            --     for i in move_range.range do
+            --         love.graphics.setColor(Color.green) -- Green wall
+            --         love.graphics.rectangle("fill", x, y, CELLSIZE, CELLSIZE)
+            --     end
+            -- end
+
         end
     end
 end
